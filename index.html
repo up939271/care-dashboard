@@ -571,9 +571,28 @@ function handleFile(e) {
 function parseWorkbook(wb, filename) {
   setLoader(70, 'Building data model…');
 
-  const sheet = name => XLSX.utils.sheet_to_json(wb.Sheets[name] || wb.Sheets[wb.SheetNames.find(n=>n.toLowerCase().includes(name.toLowerCase()))] || {}, {defval:''});
+  const sheet = name => {
+    const ws = wb.Sheets[name] || wb.Sheets[wb.SheetNames.find(n => n.toLowerCase().includes(name.toLowerCase()))];
+    if (!ws) return [];
+    const ref = ws["!ref"];
+    if (!ref) return [];
+    const range = XLSX.utils.decode_range(ref);
+    let headerRow = 0, bestCount = 0;
+    for (let r = 0; r <= Math.min(4, range.e.r); r++) {
+      let count = 0;
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const cell = ws[XLSX.utils.encode_cell({r, c})];
+        if (cell && cell.v !== undefined && cell.v !== null && String(cell.v).trim() !== "") count++;
+      }
+      if (count > bestCount) { bestCount = count; headerRow = r; }
+    }
+    return XLSX.utils.sheet_to_json(ws, {defval: "", range: headerRow});
+  };
 
   const facRows  = sheet('Facilities');
+  // Debug: log first row of each sheet so header detection can be verified
+  console.log('[CDS] Sheet names:', wb.SheetNames);
+  console.log('[CDS] Facilities sample:', facRows.slice(0,1));
   const cliRows  = sheet('Clients');
   const spRows   = sheet('Support Plans');
   const dolsRows = sheet('DoLS');
@@ -638,6 +657,17 @@ function parseWorkbook(wb, filename) {
     approver: String(r['Approved By']||'').trim(),
   })).filter(e => e.facId);
 
+  // Visible parse check — show alert if nothing loaded
+  if (!DATA.facilities.length && !DATA.supportPlans.length) {
+    hideLoader();
+    alert('Could not read data from the file.
+
+Make sure you are uploading: CareDataServices_MultiSite_Tracker.xlsx
+
+Open your browser console (F12) and look for [CDS] lines to see what was detected.');
+    return;
+  }
+  console.log('[CDS] Loaded — facilities:', DATA.facilities.length, 'plans:', DATA.supportPlans.length, 'dols:', DATA.dols.length, 'expenses:', DATA.expenses.length);
   setLoader(90, 'Rendering dashboard…');
   setTimeout(() => {
     document.getElementById('tbar-file').textContent = filename;

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Care Data Services — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --navy:    #1B3A6B;
+  --navy-d:  #0F2347;
+  --teal:    #1D9E75;
+  --teal-l:  #E1F5EE;
+  --amber:   #EF9F27;
+  --amb-l:   #FAEEDA;
+  --red:     #E24B4A;
+  --red-l:   #FCEBEB;
+  --green:   #3B6D11;
+  --grn-l:   #EAF3DE;
+  --bg:      #F4F6FA;
+  --card:    #FFFFFF;
+  --border:  #E3E7F0;
+  --text:    #111827;
+  --muted:   #6B7280;
+  --f1:      'Syne', sans-serif;
+  --f2:      'Mulish', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--f2);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Loading screen ── */
+#loading {
+  position: fixed; inset: 0;
+  background: var(--navy-d);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px; z-index: 9999;
+  transition: opacity .4s;
+}
+#loading.hidden { opacity: 0; pointer-events: none; }
+.loader-logo {
+  font-family: var(--f1);
+  font-size: 28px; font-weight: 700;
+  color: white; letter-spacing: -.02em;
+}
+.loader-logo span { color: var(--teal); }
+.loader-bar {
+  width: 200px; height: 3px;
+  background: rgba(255,255,255,.15);
+  border-radius: 2px; overflow: hidden;
+}
+.loader-fill {
+  height: 100%; width: 0;
+  background: var(--teal);
+  border-radius: 2px;
+  transition: width .6s ease;
+}
+.loader-msg { font-size: 12px; color: rgba(255,255,255,.4); font-family: var(--f2); }
+
+/* ── Upload screen ── */
+#upload-screen {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+.upload-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 52px;
+  max-width: 520px; width: 100%;
+  text-align: center;
+}
+.upload-icon {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: var(--teal-l);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 28px;
+}
+.upload-title { font-family: var(--f1); font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.upload-sub { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 32px; }
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 16px;
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--teal); background: var(--teal-l); }
+.upload-zone input { display: none; }
+.upload-zone-text { font-size: 13px; color: var(--muted); }
+.upload-zone-text strong { color: var(--teal); }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--navy); color: white;
+  border: none; border-radius: 10px;
+  padding: 12px 24px; font-size: 14px; font-weight: 600;
+  font-family: var(--f2); cursor: pointer;
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--navy-d); }
+.upload-note { font-size: 11px; color: var(--muted); margin-top: 16px; }
+
+/* ── Dashboard ── */
+#dashboard { display: none; }
+
+/* Topbar */
+.topbar {
+  background: var(--navy-d);
+  height: 58px; padding: 0 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f1); font-size: 15px; color: white; font-weight: 700;
+}
+.brand-name { font-family: var(--f1); font-size: 15px; color: white; font-weight: 600; letter-spacing: -.01em; }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.tbar-meta { font-size: 11px; color: rgba(255,255,255,.4); }
+.tbar-file { font-size: 12px; color: rgba(255,255,255,.7); background: rgba(255,255,255,.08); padding: 4px 12px; border-radius: 20px; }
+.btn-reload {
+  font-size: 11px; color: var(--teal); background: rgba(29,158,117,.15);
+  border: 1px solid rgba(29,158,117,.3); border-radius: 20px;
+  padding: 4px 12px; cursor: pointer; font-family: var(--f2);
+  transition: all .15s;
+}
+.btn-reload:hover { background: rgba(29,158,117,.25); }
+
+/* Filter bar */
+.filterbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: center; gap: 2px;
+  overflow-x: auto;
+}
+.ftab {
+  padding: 14px 18px; font-size: 13px; font-weight: 500;
+  color: var(--muted); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all .15s; font-family: var(--f2);
+}
+.ftab:hover { color: var(--navy); }
+.ftab.active { color: var(--navy); border-bottom-color: var(--teal); font-weight: 600; }
+
+/* Page tabs */
+.pagetabs {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; gap: 2px;
+}
+.ptab {
+  padding: 11px 16px; font-size: 12px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s; font-family: var(--f1);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.ptab:hover { color: var(--navy); }
+.ptab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* Main content */
+.content { padding: 24px 28px; max-width: 1400px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* KPI row */
+.kpi-row { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 14px; margin-bottom: 22px; }
+.kpi {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px 16px;
+  position: relative; overflow: hidden;
+  animation: slideUp .4s ease both;
+}
+.kpi::before {
+  content:''; position:absolute; top:0; left:0;
+  width:4px; height:100%; border-radius:14px 0 0 14px;
+}
+.kpi.k-red::before   { background: var(--red); }
+.kpi.k-amber::before { background: var(--amber); }
+.kpi.k-teal::before  { background: var(--teal); }
+.kpi.k-navy::before  { background: var(--navy); }
+.kpi.k-green::before { background: var(--green); }
+.kpi-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; font-family: var(--f1); }
+.kpi-value { font-family: var(--f1); font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -.03em; }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+/* Grid layouts */
+.g2 { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 16px; margin-bottom: 16px; }
+.g3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-bottom: 16px; }
+.gfull { margin-bottom: 16px; }
+
+/* Card */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.card-head {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title { font-family: var(--f1); font-size: 13px; font-weight: 600; color: var(--navy); }
+.card-sub { font-size: 11px; color: var(--muted); }
+.card-body { padding: 16px 20px; }
+.card-body.p0 { padding: 0; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; }
+th {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--muted);
+  padding: 9px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg); font-family: var(--f1);
+}
+td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--text); vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #FAFBFD; }
+
+/* Badges */
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+  font-family: var(--f1); letter-spacing: .02em;
+}
+.b-red   { background: var(--red-l);  color: #A32D2D; }
+.b-amber { background: var(--amb-l);  color: #7A4A0A; }
+.b-green { background: var(--grn-l);  color: var(--green); }
+.b-teal  { background: var(--teal-l); color: #085041; }
+.b-navy  { background: #E6EBF5;       color: var(--navy); }
+
+/* Facility chips */
+.chip {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 5px; font-family: var(--f1);
+}
+.c1 { background: #E6EBF5; color: var(--navy); }
+.c2 { background: var(--teal-l); color: #085041; }
+.c3 { background: var(--amb-l); color: #7A4A0A; }
+
+/* Progress bars */
+.prog { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.prog-label { font-size: 12px; color: var(--text); flex:1; min-width:0; }
+.prog-track { flex:2; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:4px; }
+.prog-pct { font-size: 12px; font-weight: 700; min-width: 38px; text-align: right; font-family: var(--f1); }
+
+/* Timeline */
+.tl-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.tl-body { flex: 1; }
+.tl-title { font-size: 12px; font-weight: 600; }
+.tl-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.tl-right { text-align: right; }
+.tl-date { font-size: 11px; font-weight: 700; font-family: var(--f1); }
+.tl-days { font-size: 11px; margin-top: 2px; }
+
+/* Calendar */
+.cal { display: grid; grid-template-columns: repeat(13,1fr); gap: 3px; }
+.cal-hdr { font-size: 9px; color: var(--muted); text-align: center; font-weight: 700; font-family: var(--f1); padding: 2px 0; }
+.cal-cell {
+  aspect-ratio: 1; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; font-family: var(--f1);
+  cursor: default; transition: transform .1s;
+}
+.cal-cell:hover { transform: scale(1.25); }
+
+/* Animations */
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+.kpi:nth-child(1) { animation-delay:.05s; }
+.kpi:nth-child(2) { animation-delay:.1s; }
+.kpi:nth-child(3) { animation-delay:.15s; }
+.kpi:nth-child(4) { animation-delay:.2s; }
+.kpi:nth-child(5) { animation-delay:.25s; }
+
+/* Donut wrap */
+.donut-row { display: flex; align-items: center; gap: 20px; }
+.donut-leg { flex:1; display:flex; flex-direction:column; gap:8px; }
+.dl-row { display:flex; align-items:center; gap:8px; }
+.dl-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.dl-label { font-size:12px; color:var(--muted); flex:1; }
+.dl-val { font-size:12px; font-weight:700; font-family:var(--f1); }
+
+/* Empty state */
+.empty { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* Responsive */
+@media(max-width:900px) {
+  .kpi-row { grid-template-columns: repeat(2,1fr); }
+  .g2, .g3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loader-logo">Care<span>DS</span></div>
+  <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
+  <div class="loader-msg" id="loader-msg">Initialising...</div>
+</div>
+
+<!-- Upload screen -->
+<div id="upload-screen">
+  <div class="upload-card">
+    <div class="upload-icon">📊</div>
+    <div class="upload-title">Multi-Site Care Dashboard</div>
+    <div class="upload-sub">Upload the Care Data Services Excel tracker to generate live visualisations for all facilities.</div>
+    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(event)">
+      <div class="upload-zone-text">
+        <strong>Click to upload</strong> or drag and drop<br>
+        <span style="font-size:11px">CareDataServices_MultiSite_Tracker.xlsx</span>
+      </div>
+    </div>
+    <div class="upload-note">The file is read locally in your browser. Nothing is uploaded to any server.</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="brand-mark">C</div>
+      <div class="brand-name">Care Data Services</div>
+    </div>
+    <div class="topbar-right">
+      <span class="tbar-file" id="tbar-file">—</span>
+      <span class="tbar-meta" id="tbar-date">—</span>
+      <button class="btn-reload" onclick="document.getElementById('upload-screen').style.display='flex'; document.getElementById('dashboard').style.display='none'">&#8635; Change file</button>
+    </div>
+  </div>
+
+  <!-- Facility filter -->
+  <div class="filterbar" id="filterbar"></div>
+
+  <!-- Page tabs -->
+  <div class="pagetabs">
+    <div class="ptab active" onclick="showPage('overview',this)">Overview</div>
+    <div class="ptab" onclick="showPage('renewals',this)">Support plans</div>
+    <div class="ptab" onclick="showPage('dols',this)">DoLS</div>
+    <div class="ptab" onclick="showPage('expenses',this)">Expenses</div>
+  </div>
+
+  <div class="content">
+
+    <!-- Overview page -->
+    <div class="page active" id="page-overview">
+      <div class="kpi-row" id="kpi-row"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">Support plan renewals</div><div class="card-sub">Most urgent first</div></div>
+          </div>
+          <div class="card-body p0">
+            <table><thead><tr><th>Client</th><th>Facility</th><th>Plan type</th><th>Due</th><th>Days</th><th>Status</th></tr></thead>
+            <tbody id="ov-sp-table"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">DoLS expiry timeline</div></div>
+          <div class="card-body p0" style="padding:0 20px" id="ov-dols-tl"></div>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Monthly spend by facility</div></div>
+          <div class="card-body"><div style="position:relative;height:200px"><canvas id="ch-exp-bar" role="img" aria-label="Monthly spend bar chart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Spend by category</div></div>
+          <div class="card-body">
+            <div class="donut-row">
+              <div style="position:relative;width:110px;height:110px;flex-shrink:0"><canvas id="ch-cat-donut" role="img" aria-label="Spend by category"></canvas></div>
+              <div class="donut-leg" id="cat-leg"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Plan compliance by facility</div></div>
+          <div class="card-body" id="fac-prog"></div>
+        </div>
+      </div>
+      <div class="gfull">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">Renewal calendar — next 12 weeks</div><div class="card-sub">Each cell = number of plans due that week. Hover for details.</div></div></div>
+          <div class="card-body">
+            <div class="cal" id="cal-grid" style="margin-bottom:10px"></div>
+            <div style="display:flex;gap:16px;font-size:11px;color:var(--muted)">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red);display:inline-block"></span>Overdue</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--amber);display:inline-block"></span>Due &lt;30d</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--teal);display:inline-block"></span>On track</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--border);display:inline-block"></span>None due</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support Plans page -->
+    <div class="page" id="page-renewals">
+      <div class="kpi-row" id="sp-kpi-row"></div>
+      <div class="gfull">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">All support plans</div><div class="card-sub">Filter by facility using the tabs above</div></div></div>
+          <div class="card-body p0">
+            <table><thead><tr><th>ID</th><th>Client</th><th>Facility</th><th>Plan type</th><th>Last reviewed</th><th>Due date</th><th>Days until due</th><th>Key worker</th><th>Status</th></tr></thead>
+            <tbody id="sp-full-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DoLS page -->
+    <div class="page" id="page-dols">
+      <div class="kpi-row" id="dols-kpi-row"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">All DoLS authorisations</div></div>
+          <div class="card-body p0">
+            <table><thead><tr><th>ID</th><th>Client</th><th>Facility</th><th>Granted</th><th>Expiry</th><th>Days remaining</th><th>Renewal applied</th><th>Status</th></tr></thead>
+            <tbody id="dols-full-table"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">DoLS status breakdown</div></div>
+          <div class="card-body">
+            <div style="position:relative;height:220px"><canvas id="ch-dols-donut" role="img" aria-label="DoLS status breakdown"></canvas></div>
+            <div id="dols-leg" style="margin-top:14px;display:flex;flex-direction:column;gap:7px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expenses page -->
+    <div class="page" id="page-expenses">
+      <div class="kpi-row" id="exp-kpi-row"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Monthly spend trend</div></div>
+          <div class="card-body"><div style="position:relative;height:240px"><canvas id="ch-exp-line" role="img" aria-label="Monthly spend trend"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Spend by category</div></div>
+          <div class="card-body"><div style="position:relative;height:240px"><canvas id="ch-exp-cat-bar" role="img" aria-label="Spend by category bar chart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="gfull">
+        <div class="card">
+          <div class="card-head"><div class="card-title">All expense records</div></div>
+          <div class="card-body p0">
+            <table><thead><tr><th>ID</th><th>Facility</th><th>Month</th><th>Category</th><th>Description</th><th>Supplier</th><th>Net (£)</th><th>VAT (£)</th><th>Total (£)</th><th>Approved by</th></tr></thead>
+            <tbody id="exp-full-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /dashboard -->
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let DATA = {};
+let activeFac = 'all';
+let charts = {};
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+function daysFrom(d) {
+  if (!d) return null;
+  const dt = d instanceof Date ? d : new Date(d);
+  return Math.round((dt - TODAY) / 86400000);
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = d instanceof Date ? d : new Date(d);
+  if (isNaN(dt)) return '—';
+  return dt.toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+}
+function excelDateToJS(v) {
+  if (!v) return null;
+  if (v instanceof Date) return v;
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v - 25569) * 86400000));
+    d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+    return d;
+  }
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+}
+function getStatus(dueDate) {
+  if (!dueDate) return 'Unknown';
+  const days = daysFrom(dueDate);
+  if (days === null) return 'Unknown';
+  if (days < 0)  return 'OVERDUE';
+  if (days <= 14) return 'Expires in 14 days';
+  if (days <= 30) return 'Due within 30 days';
+  return 'On track';
+}
+function getDoLSStatus(expiry) {
+  if (!expiry) return 'Not yet granted';
+  const days = daysFrom(expiry);
+  if (days < 0)   return 'EXPIRED';
+  if (days <= 14)  return 'Expires in 14 days';
+  if (days <= 30)  return 'Review within 30 days';
+  return 'Active';
+}
+function badge(s) {
+  const map = {
+    'OVERDUE':'b-red','EXPIRED':'b-red','Expires in 14 days':'b-red',
+    'Due within 30 days':'b-amber','Review within 30 days':'b-amber',
+    'On track':'b-green','Active':'b-teal','Not yet granted':'b-navy',
+  };
+  return `<span class="badge ${map[s]||'b-navy'}">${s}</span>`;
+}
+function chipFac(id) {
+  const idx = DATA.facilities?.findIndex(f=>f.id===id) ?? 0;
+  const cls = ['c1','c2','c3'][idx % 3];
+  const name = DATA.facilities?.find(f=>f.id===id)?.name || id;
+  return `<span class="chip ${cls}">${name.split(' ')[0]}</span>`;
+}
+function filterByFac(arr, key='facId') {
+  if (activeFac === 'all') return arr;
+  return arr.filter(x => x[key] === activeFac);
+}
+
+// ── File handling ──────────────────────────────────────────────────────────
+function handleFile(e) {
+  const file = e.target?.files?.[0] || e;
+  if (!file) return;
+  setLoader(20, 'Reading file…');
+  const reader = new FileReader();
+  reader.onload = ev => {
+    setLoader(50, 'Parsing sheets…');
+    try {
+      const wb = XLSX.read(ev.target.result, {type:'array', cellDates:true});
+      parseWorkbook(wb, file.name);
+    } catch(err) {
+      alert('Could not read file: ' + err.message);
+      hideLoader();
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseWorkbook(wb, filename) {
+  setLoader(70, 'Building data model…');
+
+  const sheet = name => {
+    const ws = wb.Sheets[name] || wb.Sheets[wb.SheetNames.find(n => n.toLowerCase().includes(name.toLowerCase()))];
+    if (!ws) return [];
+    const ref = ws["!ref"];
+    if (!ref) return [];
+    const range = XLSX.utils.decode_range(ref);
+    let headerRow = 0, bestCount = 0;
+    for (let r = 0; r <= Math.min(4, range.e.r); r++) {
+      let count = 0;
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const cell = ws[XLSX.utils.encode_cell({r, c})];
+        if (cell && cell.v !== undefined && cell.v !== null && String(cell.v).trim() !== "") count++;
+      }
+      if (count > bestCount) { bestCount = count; headerRow = r; }
+    }
+    return XLSX.utils.sheet_to_json(ws, {defval: "", range: headerRow});
+  };
+
+  const facRows  = sheet('Facilities');
+  // Debug: log first row of each sheet so header detection can be verified
+  console.log('[CDS] Sheet names:', wb.SheetNames);
+  console.log('[CDS] Facilities sample:', facRows.slice(0,1));
+  const cliRows  = sheet('Clients');
+  const spRows   = sheet('Support Plans');
+  const dolsRows = sheet('DoLS');
+  const expRows  = sheet('Expenses');
+
+  DATA.facilities = facRows.map(r => ({
+    id:   String(r['Facility ID']||'').trim(),
+    name: String(r['Facility Name']||'').trim(),
+    borough: String(r['Borough']||'').trim(),
+    manager: String(r['Registered Manager']||'').trim(),
+    beds: Number(r['Registered Beds']||0),
+  })).filter(f => f.id);
+
+  DATA.clients = cliRows.map(r => ({
+    id:       String(r['Client ID']||'').trim(),
+    initials: String(r['Client Initials']||'').trim(),
+    facId:    String(r['Facility ID']||'').trim(),
+    funding:  String(r['Funding Type']||'').trim(),
+    active:   String(r['Active']||'Yes').trim().toLowerCase() !== 'no',
+  })).filter(c => c.id);
+
+  DATA.supportPlans = spRows.map(r => {
+    const due = excelDateToJS(r['Next Review Due']);
+    return {
+      id:         String(r['Record ID']||'').trim(),
+      clientId:   String(r['Client ID']||'').trim(),
+      initials:   String(r['Client Initials']||'').trim(),
+      facId:      String(r['Facility ID']||'').trim(),
+      planType:   String(r['Plan Type']||'').trim(),
+      lastReview: excelDateToJS(r['Last Review Date']),
+      dueDate:    due,
+      keyWorker:  String(r['Assigned Key Worker']||'').trim(),
+      status:     getStatus(due),
+    };
+  }).filter(s => s.id || s.clientId);
+
+  DATA.dols = dolsRows.map(r => {
+    const exp = excelDateToJS(r['Expiry Date']);
+    return {
+      id:       String(r['Record ID']||'').trim(),
+      clientId: String(r['Client ID']||'').trim(),
+      initials: String(r['Client Initials']||'').trim(),
+      facId:    String(r['Facility ID']||'').trim(),
+      granted:  excelDateToJS(r['Date Granted']),
+      expiry:   exp,
+      renewal:  String(r['Renewal Applied']||'No').trim(),
+      status:   getDoLSStatus(exp),
+    };
+  }).filter(d => d.id || d.clientId);
+
+  DATA.expenses = expRows.map(r => ({
+    id:       String(r['Record ID']||'').trim(),
+    facId:    String(r['Facility ID']||'').trim(),
+    month:    String(r['Month']||'').trim(),
+    year:     Number(r['Year']||0),
+    category: String(r['Category']||'').trim(),
+    desc:     String(r['Description']||'').trim(),
+    supplier: String(r['Supplier']||'').trim(),
+    net:      Number(r['Amount (£)']||0),
+    vat:      Number(r['VAT (£)']||0),
+    total:    Number(r['Total (£)']||0) || (Number(r['Amount (£)']||0) + Number(r['VAT (£)']||0)),
+    approver: String(r['Approved By']||'').trim(),
+  })).filter(e => e.facId);
+
+  // Visible parse check — show alert if nothing loaded
+  if (!DATA.facilities.length && !DATA.supportPlans.length) {
+    hideLoader();
+    alert('Could not read data from the file.
+
+Make sure you are uploading: CareDataServices_MultiSite_Tracker.xlsx
+
+Open your browser console (F12) and look for [CDS] lines to see what was detected.');
+    return;
+  }
+  console.log('[CDS] Loaded — facilities:', DATA.facilities.length, 'plans:', DATA.supportPlans.length, 'dols:', DATA.dols.length, 'expenses:', DATA.expenses.length);
+  setLoader(90, 'Rendering dashboard…');
+  setTimeout(() => {
+    document.getElementById('tbar-file').textContent = filename;
+    document.getElementById('tbar-date').textContent = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    buildFilterBar();
+    renderAll();
+    document.getElementById('upload-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    setLoader(100, 'Done');
+    setTimeout(hideLoader, 400);
+  }, 300);
+}
+
+// ── Loader helpers ─────────────────────────────────────────────────────────
+function setLoader(pct, msg) {
+  document.getElementById('loader-fill').style.width = pct + '%';
+  document.getElementById('loader-msg').textContent = msg;
+}
+function hideLoader() {
+  document.getElementById('loading').classList.add('hidden');
+}
+
+// ── Filter bar ─────────────────────────────────────────────────────────────
+function buildFilterBar() {
+  const el = document.getElementById('filterbar');
+  el.innerHTML = `<div class="ftab active" onclick="setFac('all',this)">All facilities</div>`;
+  DATA.facilities.forEach(f => {
+    el.innerHTML += `<div class="ftab" onclick="setFac('${f.id}',this)">${f.name}</div>`;
+  });
+}
+function setFac(id, el) {
+  activeFac = id;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+
+// ── Page switching ─────────────────────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Render all ─────────────────────────────────────────────────────────────
+function renderAll() {
+  renderOverviewKPIs();
+  renderSPTable('ov-sp-table', true);
+  renderDoLSTimeline();
+  renderExpBarChart();
+  renderCatDonut();
+  renderFacProgress();
+  renderCalendar();
+  renderSPPage();
+  renderDoLSPage();
+  renderExpPage();
+}
+
+// ── Overview KPIs ──────────────────────────────────────────────────────────
+function renderOverviewKPIs() {
+  const sp  = filterByFac(DATA.supportPlans);
+  const dl  = filterByFac(DATA.dols);
+  const ex  = filterByFac(DATA.expenses);
+  const cl  = filterByFac(DATA.clients);
+
+  const overdue  = sp.filter(x=>x.status==='OVERDUE').length;
+  const due30    = sp.filter(x=>x.status==='Due within 30 days'||x.status==='Expires in 14 days').length;
+  const dolsWarn = dl.filter(x=>x.status!=='Active'&&x.status!=='EXPIRED'&&x.status!=='Not yet granted').length + dl.filter(x=>x.status==='EXPIRED').length;
+  const clients  = cl.filter(x=>x.active).length;
+  const spend    = ex.reduce((s,e)=>s+e.total,0);
+
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi k-red">   <div class="kpi-label">Overdue plans</div><div class="kpi-value" style="color:var(--red)">${overdue}</div><div class="kpi-sub">need immediate action</div></div>
+    <div class="kpi k-amber"> <div class="kpi-label">Due within 30 days</div><div class="kpi-value" style="color:var(--amber)">${due30}</div><div class="kpi-sub">support plans</div></div>
+    <div class="kpi k-red">   <div class="kpi-label">DoLS alerts</div><div class="kpi-value" style="color:var(--red)">${dolsWarn}</div><div class="kpi-sub">expiring or expired</div></div>
+    <div class="kpi k-teal">  <div class="kpi-label">Active clients</div><div class="kpi-value" style="color:var(--teal)">${clients}</div><div class="kpi-sub">across ${activeFac==='all'?DATA.facilities.length+' facilities':'1 facility'}</div></div>
+    <div class="kpi k-navy">  <div class="kpi-label">Total spend (£)</div><div class="kpi-value" style="color:var(--navy);font-size:22px">£${Math.round(spend).toLocaleString('en-GB')}</div><div class="kpi-sub">all months on record</div></div>
+  `;
+}
+
+// ── SP table ───────────────────────────────────────────────────────────────
+function renderSPTable(elId, limit=false) {
+  let data = filterByFac(DATA.supportPlans).slice().sort((a,b)=>{
+    const da = daysFrom(a.dueDate)??9999, db = daysFrom(b.dueDate)??9999;
+    return da - db;
+  });
+  if (limit) data = data.slice(0, 8);
+  const tb = document.getElementById(elId);
+  if (!tb) return;
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="9" class="empty">No plans found</td></tr>`; return; }
+  tb.innerHTML = data.map(sp => {
+    const days = daysFrom(sp.dueDate);
+    const dStr = days===null?'—': days<0?`${Math.abs(days)}d overdue`:`${days}d`;
+    const dCol = days===null?'var(--muted)':days<0?'var(--red)':days<=14?'var(--red)':days<=30?'var(--amber)':'var(--teal)';
+    return `<tr>
+      <td style="color:var(--muted);font-size:10px">${sp.id||'—'}</td>
+      <td><strong>${sp.initials||'—'}</strong></td>
+      <td>${chipFac(sp.facId)}</td>
+      <td style="color:var(--muted)">${sp.planType}</td>
+      <td>${fmtDate(sp.lastReview)}</td>
+      <td style="font-weight:600">${fmtDate(sp.dueDate)}</td>
+      <td style="font-weight:700;color:${dCol}">${dStr}</td>
+      <td>${sp.keyWorker||'—'}</td>
+      <td>${badge(sp.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── DoLS timeline ──────────────────────────────────────────────────────────
+function renderDoLSTimeline() {
+  const data = filterByFac(DATA.dols).slice().sort((a,b)=>(daysFrom(a.expiry)??9999)-(daysFrom(b.expiry)??9999));
+  const el = document.getElementById('ov-dols-tl');
+  if (!el) return;
+  if (!data.length) { el.innerHTML = '<div class="empty">No DoLS records found</div>'; return; }
+  el.innerHTML = data.slice(0,6).map(d => {
+    const days = daysFrom(d.expiry);
+    const dotC = d.status==='EXPIRED'||d.status==='Expires in 14 days'?'var(--red)':d.status==='Review within 30 days'?'var(--amber)':'var(--teal)';
+    const dStr = days===null?'—':days<0?`${Math.abs(days)}d ago`:`in ${days}d`;
+    return `<div class="tl-item">
+      <div class="tl-dot" style="background:${dotC}"></div>
+      <div class="tl-body">
+        <div class="tl-title">${d.initials||'—'} &ndash; <span style="color:var(--muted);font-weight:400;font-size:11px">${chipFac(d.facId)}</span></div>
+        <div class="tl-sub">Granted ${fmtDate(d.granted)} &bull; ${badge(d.status)}</div>
+      </div>
+      <div class="tl-right">
+        <div class="tl-date">${fmtDate(d.expiry)}</div>
+        <div class="tl-days" style="color:${dotC}">${dStr}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Expense bar chart ──────────────────────────────────────────────────────
+function renderExpBarChart() {
+  const ex = filterByFac(DATA.expenses);
+  const months = [...new Set(ex.map(e=>e.month))].slice(0,6);
+  const facs = activeFac==='all' ? DATA.facilities : DATA.facilities.filter(f=>f.id===activeFac);
+  const colors = {'FAC-001':'#1B3A6B','FAC-002':'#1D9E75','FAC-003':'#EF9F27'};
+
+  const datasets = facs.map(f => ({
+    label: f.name.split(' ')[0],
+    data: months.map(m => ex.filter(e=>e.facId===f.id&&e.month===m).reduce((s,e)=>s+e.total,0)),
+    backgroundColor: Object.values(colors)[DATA.facilities.indexOf(f)%3],
+    borderRadius: 4,
+  }));
+
+  if (charts.expBar) charts.expBar.destroy();
+  const ctx = document.getElementById('ch-exp-bar');
+  if (!ctx) return;
+  charts.expBar = new Chart(ctx, {
+    type:'bar',
+    data:{labels:months.map(m=>m.slice(0,3)), datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:facs.length>1,labels:{font:{size:11},boxWidth:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F0F0F0'},ticks:{font:{size:11},callback:v=>'£'+v.toLocaleString()}}}}
+  });
+}
+
+// ── Category donut ─────────────────────────────────────────────────────────
+function renderCatDonut() {
+  const ex = filterByFac(DATA.expenses);
+  const cats = [...new Set(ex.map(e=>e.category))].filter(Boolean);
+  const totals = cats.map(c=>ex.filter(e=>e.category===c).reduce((s,e)=>s+e.total,0));
+  const colors = ['#1B3A6B','#1D9E75','#EF9F27','#E24B4A','#7F77DD','#D85A30','#3B6D11'];
+
+  if (charts.catDonut) charts.catDonut.destroy();
+  const ctx = document.getElementById('ch-cat-donut');
+  if (!ctx) return;
+  charts.catDonut = new Chart(ctx, {
+    type:'doughnut',
+    data:{labels:cats,datasets:[{data:totals,backgroundColor:colors,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+  });
+
+  document.getElementById('cat-leg').innerHTML = cats.map((c,i)=>`
+    <div class="dl-row"><div class="dl-dot" style="background:${colors[i]}"></div>
+    <div class="dl-label">${c}</div><div class="dl-val">£${Math.round(totals[i]).toLocaleString()}</div></div>
+  `).join('');
+}
+
+// ── Facility progress bars ─────────────────────────────────────────────────
+function renderFacProgress() {
+  const facs = activeFac==='all' ? DATA.facilities : DATA.facilities.filter(f=>f.id===activeFac);
+  const el = document.getElementById('fac-prog');
+  if (!el) return;
+  el.innerHTML = '';
+  facs.forEach(f => {
+    const plans = DATA.supportPlans.filter(x=>x.facId===f.id);
+    const total = plans.length || 1;
+    const ok = plans.filter(x=>x.status==='On track').length;
+    const pct = Math.round(ok/total*100);
+    const col = pct>=80?'var(--teal)':pct>=60?'var(--amber)':'var(--red)';
+    const ov = plans.filter(x=>x.status==='OVERDUE').length;
+    const du = plans.filter(x=>x.status==='Due within 30 days'||x.status==='Expires in 14 days').length;
+    el.innerHTML += `
+      <div class="prog">
+        <div class="prog-label">${chipFac(f.id)}</div>
+        <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+        <div class="prog-pct" style="color:${col}">${pct}%</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding-left:4px">
+        ${ov?`<span style="color:var(--red);font-weight:700">${ov} overdue</span>`:''}
+        ${ov&&du?' &bull; ':''}
+        ${du?`<span style="color:var(--amber);font-weight:700">${du} due soon</span>`:''}
+        ${!ov&&!du?'<span style="color:var(--teal)">All on track</span>':''}
+      </div>`;
+  });
+}
+
+// ── Calendar ───────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const sp = filterByFac(DATA.supportPlans);
+  const el = document.getElementById('cal-grid');
+  if (!el) return;
+
+  // Week headers
+  const startOfWeek = new Date(TODAY);
+  startOfWeek.setDate(TODAY.getDate() - ((TODAY.getDay()+6)%7));
+
+  let html = '<div class="cal-hdr"></div>';
+  for (let w=0; w<12; w++) {
+    const d = new Date(startOfWeek); d.setDate(d.getDate() + w*7);
+    html += `<div class="cal-hdr">${d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>`;
+  }
+
+  const rows = [
+    {label:'Plans', data: sp},
+  ];
+
+  rows.forEach(row => {
+    html += `<div style="font-size:10px;font-weight:700;color:var(--muted);font-family:var(--f1);display:flex;align-items:center;padding:2px 0">${row.label}</div>`;
+    for (let w=0; w<12; w++) {
+      const wStart = new Date(startOfWeek); wStart.setDate(wStart.getDate() + w*7);
+      const wEnd   = new Date(wStart); wEnd.setDate(wEnd.getDate() + 6);
+      const inWeek = row.data.filter(p => {
+        if (!p.dueDate) return false;
+        const d = p.dueDate instanceof Date ? p.dueDate : new Date(p.dueDate);
+        return d >= wStart && d <= wEnd;
+      });
+      const count = inWeek.length;
+      const hasOverdue = inWeek.some(p=>p.status==='OVERDUE');
+      const hasSoon    = inWeek.some(p=>p.status==='Due within 30 days'||p.status==='Expires in 14 days');
+      const bg = count===0?'var(--border)':hasOverdue?'var(--red)':hasSoon?'var(--amber)':'var(--teal)';
+      const tc = count===0?'transparent':'white';
+      const wLabel = wStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      html += `<div class="cal-cell" style="background:${bg};color:${tc}" title="${wLabel}: ${count} plan(s)">${count||''}</div>`;
+    }
+  });
+
+  el.innerHTML = html;
+}
+
+// ── SP full page ───────────────────────────────────────────────────────────
+function renderSPPage() {
+  const sp = filterByFac(DATA.supportPlans);
+  const overdue = sp.filter(x=>x.status==='OVERDUE').length;
+  const due30   = sp.filter(x=>x.status==='Due within 30 days'||x.status==='Expires in 14 days').length;
+  const onTrack = sp.filter(x=>x.status==='On track').length;
+
+  document.getElementById('sp-kpi-row').innerHTML = `
+    <div class="kpi k-red">  <div class="kpi-label">Overdue</div><div class="kpi-value" style="color:var(--red)">${overdue}</div></div>
+    <div class="kpi k-amber"><div class="kpi-label">Due within 30 days</div><div class="kpi-value" style="color:var(--amber)">${due30}</div></div>
+    <div class="kpi k-green"><div class="kpi-label">On track</div><div class="kpi-value" style="color:var(--green)">${onTrack}</div></div>
+    <div class="kpi k-teal"> <div class="kpi-label">Total plans</div><div class="kpi-value" style="color:var(--teal)">${sp.length}</div></div>
+    <div class="kpi k-navy"> <div class="kpi-label">Compliance</div><div class="kpi-value" style="color:var(--navy)">${sp.length?Math.round(onTrack/sp.length*100):0}%</div></div>
+  `;
+  renderSPTable('sp-full-table', false);
+}
+
+// ── DoLS full page ─────────────────────────────────────────────────────────
+function renderDoLSPage() {
+  const dl = filterByFac(DATA.dols);
+  const active  = dl.filter(x=>x.status==='Active').length;
+  const expiring= dl.filter(x=>x.status==='Review within 30 days'||x.status==='Expires in 14 days').length;
+  const expired = dl.filter(x=>x.status==='EXPIRED').length;
+
+  document.getElementById('dols-kpi-row').innerHTML = `
+    <div class="kpi k-teal"> <div class="kpi-label">Active</div><div class="kpi-value" style="color:var(--teal)">${active}</div></div>
+    <div class="kpi k-amber"><div class="kpi-label">Expiring soon</div><div class="kpi-value" style="color:var(--amber)">${expiring}</div></div>
+    <div class="kpi k-red">  <div class="kpi-label">Expired</div><div class="kpi-value" style="color:var(--red)">${expired}</div></div>
+    <div class="kpi k-navy"> <div class="kpi-label">Total authorisations</div><div class="kpi-value" style="color:var(--navy)">${dl.length}</div></div>
+    <div class="kpi k-green"><div class="kpi-label">Renewal applied</div><div class="kpi-value" style="color:var(--green)">${dl.filter(x=>x.renewal?.toLowerCase()==='yes').length}</div></div>
+  `;
+
+  const tb = document.getElementById('dols-full-table');
+  if (!dl.length) { tb.innerHTML=`<tr><td colspan="8" class="empty">No DoLS records</td></tr>`; return; }
+  tb.innerHTML = dl.slice().sort((a,b)=>(daysFrom(a.expiry)??9999)-(daysFrom(b.expiry)??9999)).map(d=>{
+    const days = daysFrom(d.expiry);
+    const dStr = days===null?'—':days<0?`${Math.abs(days)}d ago`:`${days}d`;
+    const dCol = days===null?'var(--muted)':days<0?'var(--red)':days<=14?'var(--red)':days<=30?'var(--amber)':'var(--teal)';
+    return `<tr>
+      <td style="color:var(--muted);font-size:10px">${d.id||'—'}</td>
+      <td><strong>${d.initials||'—'}</strong></td>
+      <td>${chipFac(d.facId)}</td>
+      <td>${fmtDate(d.granted)}</td>
+      <td style="font-weight:600">${fmtDate(d.expiry)}</td>
+      <td style="font-weight:700;color:${dCol}">${dStr}</td>
+      <td>${badge(d.renewal==='Yes'?'Active':d.renewal==='No'?'Not yet granted':'Active')}</td>
+      <td>${badge(d.status)}</td>
+    </tr>`;
+  }).join('');
+
+  // DoLS donut
+  const statuses = ['Active','Review within 30 days','Expires in 14 days','EXPIRED','Not yet granted'];
+  const counts = statuses.map(s=>dl.filter(x=>x.status===s).length);
+  const dColors = ['#1D9E75','#EF9F27','#E24B4A','#A32D2D','#B4B2A9'];
+
+  if (charts.dolsDonut) charts.dolsDonut.destroy();
+  const ctx = document.getElementById('ch-dols-donut');
+  if (ctx) {
+    charts.dolsDonut = new Chart(ctx,{
+      type:'doughnut',
+      data:{labels:statuses,datasets:[{data:counts,backgroundColor:dColors,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}}
+    });
+  }
+  document.getElementById('dols-leg').innerHTML = statuses.map((s,i)=>`
+    <div class="dl-row"><div class="dl-dot" style="background:${dColors[i]}"></div>
+    <div class="dl-label">${s}</div><div class="dl-val">${counts[i]}</div></div>
+  `).join('');
+}
+
+// ── Expenses full page ─────────────────────────────────────────────────────
+function renderExpPage() {
+  const ex = filterByFac(DATA.expenses);
+  const total    = ex.reduce((s,e)=>s+e.total,0);
+  const staffing = ex.filter(e=>e.category==='Staffing').reduce((s,e)=>s+e.total,0);
+  const months   = [...new Set(ex.map(e=>e.month))].length;
+
+  document.getElementById('exp-kpi-row').innerHTML = `
+    <div class="kpi k-navy"> <div class="kpi-label">Total spend</div><div class="kpi-value" style="color:var(--navy);font-size:22px">£${Math.round(total).toLocaleString()}</div></div>
+    <div class="kpi k-amber"><div class="kpi-label">Staffing spend</div><div class="kpi-value" style="color:var(--amber);font-size:22px">£${Math.round(staffing).toLocaleString()}</div></div>
+    <div class="kpi k-teal"> <div class="kpi-label">Staffing %</div><div class="kpi-value" style="color:var(--teal)">${total?Math.round(staffing/total*100):0}%</div></div>
+    <div class="kpi k-red">  <div class="kpi-label">Expense records</div><div class="kpi-value" style="color:var(--red)">${ex.length}</div></div>
+    <div class="kpi k-green"><div class="kpi-label">Months on record</div><div class="kpi-value" style="color:var(--green)">${months}</div></div>
+  `;
+
+  // Line chart
+  const monthOrder = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const allMonths = [...new Set(ex.map(e=>e.month))].sort((a,b)=>monthOrder.indexOf(a)-monthOrder.indexOf(b));
+  const facs = activeFac==='all'?DATA.facilities:DATA.facilities.filter(f=>f.id===activeFac);
+  const lineColors = ['#1B3A6B','#1D9E75','#EF9F27'];
+
+  if (charts.expLine) charts.expLine.destroy();
+  const ctxL = document.getElementById('ch-exp-line');
+  if (ctxL) {
+    charts.expLine = new Chart(ctxL,{
+      type:'line',
+      data:{labels:allMonths.map(m=>m.slice(0,3)),datasets:facs.map((f,i)=>({
+        label:f.name.split(' ')[0],
+        data:allMonths.map(m=>ex.filter(e=>e.facId===f.id&&e.month===m).reduce((s,e)=>s+e.total,0)),
+        borderColor:lineColors[i%3],backgroundColor:'transparent',
+        tension:.4,pointRadius:4,pointBackgroundColor:lineColors[i%3],borderWidth:2,
+      }))},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:facs.length>1,labels:{font:{size:11},boxWidth:10}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F0F0F0'},ticks:{font:{size:11},callback:v=>'£'+v.toLocaleString()}}}}
+    });
+  }
+
+  // Category bar
+  const cats = [...new Set(ex.map(e=>e.category))].filter(Boolean);
+  const catTotals = cats.map(c=>ex.filter(e=>e.category===c).reduce((s,e)=>s+e.total,0));
+  const catColors = ['#1B3A6B','#1D9E75','#EF9F27','#E24B4A','#7F77DD','#D85A30','#3B6D11'];
+
+  if (charts.expCat) charts.expCat.destroy();
+  const ctxC = document.getElementById('ch-exp-cat-bar');
+  if (ctxC) {
+    charts.expCat = new Chart(ctxC,{
+      type:'bar',
+      data:{labels:cats,datasets:[{data:catTotals,backgroundColor:catColors,borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F0F0F0'},ticks:{font:{size:11},callback:v=>'£'+v.toLocaleString()}}}}
+    });
+  }
+
+  // Table
+  const tb = document.getElementById('exp-full-table');
+  if (!ex.length) { tb.innerHTML=`<tr><td colspan="10" class="empty">No expense records</td></tr>`; return; }
+  tb.innerHTML = ex.slice().sort((a,b)=>monthOrder.indexOf(a.month)-monthOrder.indexOf(b.month)).map(e=>`<tr>
+    <td style="color:var(--muted);font-size:10px">${e.id||'—'}</td>
+    <td>${chipFac(e.facId)}</td>
+    <td>${e.month}</td>
+    <td>${e.category}</td>
+    <td style="color:var(--muted)">${e.desc}</td>
+    <td style="color:var(--muted)">${e.supplier}</td>
+    <td style="text-align:right">£${e.net.toLocaleString()}</td>
+    <td style="text-align:right">£${e.vat.toLocaleString()}</td>
+    <td style="text-align:right;font-weight:700">£${e.total.toLocaleString()}</td>
+    <td style="color:var(--muted)">${e.approver}</td>
+  </tr>`).join('');
+}
+
+// ── Drag and drop ──────────────────────────────────────────────────────────
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile({target:{files:[file]}});
+});
+
+// ── Init loader ────────────────────────────────────────────────────────────
+setTimeout(() => {
+  setLoader(100, 'Ready');
+  setTimeout(hideLoader, 500);
+}, 800);
+</script>
+</body>
+</html>

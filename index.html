@@ -968,7 +968,7 @@ function renderExpPage() {
     .then(function(buf) {
       if (!buf) return;
       var wb = XLSX.read(buf, { type:'array', cellDates:true, cellNF:false });
-      parseAndRender(wb, 'EbenezerCareHome_Tracker.xlsx');
+      parseAndRender(wb, 'Ebenezer Real Time Monitoring Online.xlsx');
     })
     .catch(function() {
       // Network error or file missing — show upload screen as fallback

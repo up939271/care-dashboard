@@ -19,7 +19,7 @@
 body{font-family:var(--f2);background:var(--bg);color:var(--text);min-height:100vh}
 
 /* Upload */
-#upload-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+#upload-screen{min-height:100vh;display:none;align-items:center;justify-content:center;padding:40px 20px}
 .upload-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px 52px;max-width:520px;width:100%;text-align:center}
 .upload-icon{width:64px;height:64px;border-radius:16px;background:var(--teal-l);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:28px}
 .upload-title{font-family:var(--f1);font-size:22px;font-weight:700;color:var(--navy);margin-bottom:10px}
@@ -951,6 +951,30 @@ function renderExpPage() {
         '<td style="color:var(--muted)">' + e.approver + '</td></tr>';
     }).join('') || '<tr><td colspan="10" class="empty">No expense records</td></tr>';
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO-LOAD — fetches the Excel file from the repository on page open
+// ─────────────────────────────────────────────────────────────────────────────
+(function autoLoad() {
+  fetch('EbenezerCareHome_Tracker.xlsx')
+    .then(function(res) {
+      if (!res.ok) {
+        // File not found in repo — show the upload screen as fallback
+        document.getElementById('upload-screen').style.display = 'flex';
+        return null;
+      }
+      return res.arrayBuffer();
+    })
+    .then(function(buf) {
+      if (!buf) return;
+      var wb = XLSX.read(buf, { type:'array', cellDates:true, cellNF:false });
+      parseAndRender(wb, 'EbenezerCareHome_Tracker.xlsx');
+    })
+    .catch(function() {
+      // Network error or file missing — show upload screen as fallback
+      document.getElementById('upload-screen').style.display = 'flex';
+    });
+})();
 </script>
 </body>
 </html>

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Care Data Services — Dashboard</title>
+<title>Ebenezer Residential Care Home Ltd — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
-  --navy:#1B3A6B; --navy-d:#0F2347; --teal:#1D9E75; --teal-l:#E1F5EE;
+  --navy:#1A4332; --navy-d:#0D2B1F; --teal:#2D8653; --teal-l:#D1FAE5;
   --amber:#EF9F27; --amb-l:#FAEEDA; --red:#E24B4A; --red-l:#FCEBEB;
   --green:#3B6D11; --grn-l:#EAF3DE;
   --bg:#F4F6FA; --card:#FFFFFF; --border:#E3E7F0; --text:#111827; --muted:#6B7280;
@@ -141,13 +141,13 @@ tbody tr:hover td{background:#FAFBFD}
 <div id="upload-screen">
   <div class="upload-card">
     <div class="upload-icon">&#128202;</div>
-    <div class="upload-title">Multi-Site Care Dashboard</div>
-    <div class="upload-sub">Upload the Care Data Services Excel tracker to generate live visualisations for all facilities.</div>
+    <div class="upload-title">Ebenezer Residential Care Home Ltd</div>
+    <div class="upload-sub">Upload the Ebenezer care tracker to view live compliance and operational data across all facilities.</div>
     <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
       <input type="file" id="file-input" accept=".xlsx,.xls">
       <div class="upload-zone-text">
         <strong>Click to upload</strong> or drag and drop<br>
-        <span style="font-size:11px">CareDataServices_MultiSite_Tracker.xlsx</span>
+        <span style="font-size:11px">EbenezerCareHome_Tracker.xlsx</span>
       </div>
     </div>
     <div class="upload-note">The file is read locally in your browser. Nothing is uploaded to any server.</div>
@@ -159,8 +159,8 @@ tbody tr:hover td{background:#FAFBFD}
 <div id="dashboard">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="brand-mark">C</div>
-      <div class="brand-name">Care Data Services</div>
+      <div class="brand-mark">E</div>
+      <div class="brand-name">Ebenezer Residential Care Home Ltd</div>
     </div>
     <div class="topbar-right">
       <span class="tbar-file" id="tbar-file"></span>
@@ -539,7 +539,7 @@ function parseAndRender(wb, filename) {
     'expenses:', DATA.expenses.length);
 
   if (!DATA.facilities.length && !DATA.supportPlans.length) {
-    showError('No data found. Make sure you are uploading CareDataServices_MultiSite_Tracker.xlsx and that the Facilities and Support Plans sheets contain data from row 4 onwards.');
+    showError('No data found. Make sure you are uploading EbenezerCareHome_Tracker.xlsx and that the Facilities and Support Plans sheets contain data from row 4 onwards.');
     return;
   }
 

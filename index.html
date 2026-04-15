@@ -4,135 +4,331 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ebenezer Residential Care Home Ltd — Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
-  --navy:#1A4332; --navy-d:#0D2B1F; --teal:#2D8653; --teal-l:#D1FAE5;
-  --amber:#EF9F27; --amb-l:#FAEEDA; --red:#E24B4A; --red-l:#FCEBEB;
-  --green:#3B6D11; --grn-l:#EAF3DE;
-  --bg:#F4F6FA; --card:#FFFFFF; --border:#E3E7F0; --text:#111827; --muted:#6B7280;
-  --f1:'Syne',sans-serif; --f2:'Mulish',sans-serif;
+  --forest:   #1A4332;
+  --forest-d: #0D2B1F;
+  --forest-m: #2D6A4F;
+  --green:    #40916C;
+  --green-l:  #D8F3DC;
+  --green-xl: #F0FFF4;
+  --amber:    #F4A261;
+  --amber-l:  #FEF3C7;
+  --red:      #E63946;
+  --red-l:    #FFF0F0;
+  --blue:     #2563EB;
+  --blue-l:   #EFF6FF;
+  --bg:       #F7F8FC;
+  --card:     #FFFFFF;
+  --border:   #E8ECF4;
+  --border-s: #D1D9EA;
+  --text:     #0F172A;
+  --text-2:   #475569;
+  --text-3:   #94A3B8;
+  --shadow:   0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --shadow-m: 0 4px 16px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.04);
+  --radius:   14px;
+  --radius-s: 8px;
+  --f: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--f2);background:var(--bg);color:var(--text);min-height:100vh}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:var(--f); background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-/* Upload */
-#upload-screen{min-height:100vh;display:none;align-items:center;justify-content:center;padding:40px 20px}
-.upload-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px 52px;max-width:520px;width:100%;text-align:center}
-.upload-icon{width:64px;height:64px;border-radius:16px;background:var(--teal-l);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:28px}
-.upload-title{font-family:var(--f1);font-size:22px;font-weight:700;color:var(--navy);margin-bottom:10px}
-.upload-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:32px}
-.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;cursor:pointer;transition:all .2s;margin-bottom:16px}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:var(--teal-l)}
-.upload-zone input{display:none}
-.upload-zone-text{font-size:13px;color:var(--muted)}
-.upload-zone-text strong{color:var(--teal)}
-.upload-note{font-size:11px;color:var(--muted);margin-top:16px}
-.error-msg{background:var(--red-l);color:#A32D2D;border-radius:8px;padding:12px 16px;font-size:13px;margin-top:16px;display:none;text-align:left}
+/* ── UPLOAD SCREEN ── */
+#upload-screen { min-height:100vh; display:none; align-items:center; justify-content:center; padding:24px; background:linear-gradient(135deg,var(--forest-d) 0%,var(--forest-m) 100%); }
+.upload-card { background:var(--card); border-radius:24px; padding:48px 44px; max-width:480px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.upload-logo { width:72px; height:72px; border-radius:20px; background:linear-gradient(135deg,var(--forest),var(--green)); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:32px; font-weight:800; color:white; letter-spacing:-1px; }
+.upload-title { font-size:20px; font-weight:800; color:var(--text); margin-bottom:6px; letter-spacing:-.03em; }
+.upload-org { font-size:12px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:.08em; margin-bottom:20px; }
+.upload-sub { font-size:14px; color:var(--text-2); line-height:1.6; margin-bottom:32px; }
+.upload-zone { border:2px dashed var(--border-s); border-radius:16px; padding:28px; cursor:pointer; transition:all .2s; margin-bottom:16px; }
+.upload-zone:hover, .upload-zone.drag { border-color:var(--green); background:var(--green-xl); }
+.upload-zone input { display:none; }
+.upload-zone-icon { font-size:28px; margin-bottom:10px; }
+.upload-zone-text { font-size:13px; color:var(--text-2); line-height:1.5; }
+.upload-zone-text strong { color:var(--green); font-weight:700; }
+.upload-note { font-size:11px; color:var(--text-3); margin-top:12px; }
+.error-msg { background:var(--red-l); color:#C0152A; border-radius:var(--radius-s); padding:12px 16px; font-size:13px; margin-top:16px; display:none; text-align:left; border-left:3px solid var(--red); }
 
-/* Dashboard */
-#dashboard{display:none}
-.topbar{background:var(--navy-d);height:58px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.topbar-left{display:flex;align-items:center;gap:14px}
-.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-family:var(--f1);font-size:15px;color:white;font-weight:700}
-.brand-name{font-family:var(--f1);font-size:15px;color:white;font-weight:600;letter-spacing:-.01em}
-.topbar-right{display:flex;align-items:center;gap:14px}
-.tbar-meta{font-size:11px;color:rgba(255,255,255,.4)}
-.tbar-file{font-size:12px;color:rgba(255,255,255,.7);background:rgba(255,255,255,.08);padding:4px 12px;border-radius:20px}
-.btn-reload{font-size:11px;color:var(--teal);background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.3);border-radius:20px;padding:4px 12px;cursor:pointer;font-family:var(--f2);transition:all .15s}
-.btn-reload:hover{background:rgba(29,158,117,.25)}
+/* ── DASHBOARD ── */
+#dashboard { display:none; }
 
-.filterbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;gap:2px;overflow-x:auto}
-.ftab{padding:14px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;font-family:var(--f2)}
-.ftab:hover{color:var(--navy)}
-.ftab.active{color:var(--navy);border-bottom-color:var(--teal);font-weight:600}
-
-.pagetabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px}
-.ptab{padding:11px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:var(--f1);text-transform:uppercase;letter-spacing:.06em}
-.ptab:hover{color:var(--navy)}
-.ptab.active{color:var(--teal);border-bottom-color:var(--teal)}
-
-.content{padding:24px 28px;max-width:1400px}
-.page{display:none}
-.page.active{display:block}
-
-.kpi-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:14px 0 0 14px}
-.kpi.k-red::before{background:var(--red)}
-.kpi.k-amber::before{background:var(--amber)}
-.kpi.k-teal::before{background:var(--teal)}
-.kpi.k-navy::before{background:var(--navy)}
-.kpi.k-green::before{background:var(--green)}
-.kpi-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-family:var(--f1)}
-.kpi-value{font-family:var(--f1);font-size:30px;font-weight:700;line-height:1;letter-spacing:-.03em}
-.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
-
-.g2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
-.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
-.gfull{margin-bottom:16px}
-
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.card-head{padding:14px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-family:var(--f1);font-size:13px;font-weight:600;color:var(--navy)}
-.card-sub{font-size:11px;color:var(--muted)}
-.card-body{padding:16px 20px}
-.card-body.p0{padding:0}
-
-table{width:100%;border-collapse:collapse}
-th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg);font-family:var(--f1)}
-td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#FAFBFD}
-
-.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;font-family:var(--f1);letter-spacing:.02em}
-.b-red{background:var(--red-l);color:#A32D2D}
-.b-amber{background:var(--amb-l);color:#7A4A0A}
-.b-green{background:var(--grn-l);color:var(--green)}
-.b-teal{background:var(--teal-l);color:#085041}
-.b-navy{background:#E6EBF5;color:var(--navy)}
-
-.chip{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;font-family:var(--f1)}
-.c1{background:#E6EBF5;color:var(--navy)}
-.c2{background:var(--teal-l);color:#085041}
-.c3{background:var(--amb-l);color:#7A4A0A}
-
-.prog{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.prog-label{font-size:12px;color:var(--text);flex:1;min-width:0}
-.prog-track{flex:2;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px}
-.prog-pct{font-size:12px;font-weight:700;min-width:38px;text-align:right;font-family:var(--f1)}
-
-.tl-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
-.tl-item:last-child{border-bottom:none}
-.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
-.tl-body{flex:1}
-.tl-title{font-size:12px;font-weight:600}
-.tl-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.tl-right{text-align:right}
-.tl-date{font-size:11px;font-weight:700;font-family:var(--f1)}
-.tl-days{font-size:11px;margin-top:2px}
-
-.cal{display:grid;grid-template-columns:repeat(13,1fr);gap:3px}
-.cal-hdr{font-size:9px;color:var(--muted);text-align:center;font-weight:700;font-family:var(--f1);padding:2px 0}
-.cal-cell{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--f1);cursor:default;transition:transform .1s}
-.cal-cell:hover{transform:scale(1.25)}
-
-.donut-row{display:flex;align-items:center;gap:20px}
-.donut-leg{flex:1;display:flex;flex-direction:column;gap:8px}
-.dl-row{display:flex;align-items:center;gap:8px}
-.dl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.dl-label{font-size:12px;color:var(--muted);flex:1}
-.dl-val{font-size:12px;font-weight:700;font-family:var(--f1)}
-
-.empty{padding:40px;text-align:center;color:var(--muted);font-size:13px}
-
-@media(max-width:900px){
-  .kpi-row{grid-template-columns:repeat(2,1fr)}
-  .g2,.g3{grid-template-columns:1fr}
+/* Topbar */
+.topbar {
+  background:var(--forest-d);
+  height:62px; padding:0 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  border-bottom:1px solid rgba(255,255,255,.06);
 }
+.topbar-left { display:flex; align-items:center; gap:12px; min-width:0; }
+.brand-mark {
+  width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),#52B788);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:800; color:white; letter-spacing:-1px;
+}
+.brand-text { min-width:0; }
+.brand-name { font-size:14px; font-weight:700; color:white; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.brand-sub  { font-size:10px; color:rgba(255,255,255,.4); font-weight:500; letter-spacing:.04em; text-transform:uppercase; }
+.topbar-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.tbar-file { font-size:11px; color:rgba(255,255,255,.6); background:rgba(255,255,255,.08); padding:4px 10px; border-radius:20px; display:none; }
+.tbar-file.show { display:inline; }
+.tbar-date { font-size:11px; color:rgba(255,255,255,.35); }
+.btn-reload { font-size:11px; font-weight:600; color:rgba(255,255,255,.7); background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:20px; padding:5px 12px; cursor:pointer; font-family:var(--f); transition:all .15s; }
+.btn-reload:hover { background:rgba(255,255,255,.15); color:white; }
+
+/* Filter + page nav */
+.nav-strip {
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  display:flex; align-items:stretch;
+  overflow-x:auto; gap:0;
+  -webkit-overflow-scrolling:touch;
+}
+.nav-strip::-webkit-scrollbar { display:none; }
+.ftab, .ptab {
+  padding:0 16px; height:46px;
+  font-size:12px; font-weight:600;
+  color:var(--text-2); cursor:pointer;
+  white-space:nowrap;
+  border-bottom:2px solid transparent;
+  display:flex; align-items:center;
+  transition:all .15s;
+  font-family:var(--f);
+  text-transform:uppercase; letter-spacing:.05em;
+}
+.ftab:hover, .ptab:hover { color:var(--text); }
+.ftab.active { color:var(--forest); border-bottom-color:var(--green); }
+.ptab.active { color:var(--green); border-bottom-color:var(--green); }
+.nav-divider { width:1px; background:var(--border); margin:10px 8px; flex-shrink:0; }
+
+/* Content */
+.content { padding:20px; max-width:1400px; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* KPI row */
+.kpi-row { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+.kpi {
+  background:var(--card); border-radius:var(--radius);
+  padding:16px 18px; position:relative; overflow:hidden;
+  box-shadow:var(--shadow); border:1px solid var(--border);
+  transition:transform .15s, box-shadow .15s;
+}
+.kpi:hover { transform:translateY(-2px); box-shadow:var(--shadow-m); }
+.kpi-accent { position:absolute; bottom:0; left:0; right:0; height:3px; border-radius:0 0 var(--radius) var(--radius); }
+.kpi.k-red   .kpi-accent { background:var(--red); }
+.kpi.k-amber .kpi-accent { background:var(--amber); }
+.kpi.k-green .kpi-accent { background:var(--green); }
+.kpi.k-navy  .kpi-accent { background:var(--forest); }
+.kpi.k-teal  .kpi-accent { background:#0EA5E9; }
+.kpi-icon { font-size:18px; margin-bottom:10px; }
+.kpi-label { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
+.kpi-value { font-size:26px; font-weight:800; line-height:1; letter-spacing:-.04em; color:var(--text); }
+.kpi-value.small { font-size:20px; }
+.kpi-sub { font-size:11px; color:var(--text-3); margin-top:5px; }
+
+/* Grid layouts */
+.g2   { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; margin-bottom:14px; }
+.g3   { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:14px; }
+.gfull { margin-bottom:14px; }
+
+/* Cards */
+.card { background:var(--card); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; box-shadow:var(--shadow); }
+.card-head { padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-size:13px; font-weight:700; color:var(--text); letter-spacing:-.01em; }
+.card-sub   { font-size:11px; color:var(--text-3); margin-top:2px; }
+.card-body  { padding:16px 20px; }
+.card-body.p0 { padding:0; }
+
+/* ── PLAN CARDS (mobile-friendly row design) ── */
+.plan-list { display:flex; flex-direction:column; }
+.plan-row {
+  display:grid;
+  grid-template-columns: 80px 1fr 110px 90px 70px 110px;
+  align-items:center;
+  gap:0;
+  border-bottom:1px solid var(--border);
+  transition:background .1s;
+}
+.plan-row:last-child { border-bottom:none; }
+.plan-row:hover { background:#FAFBFE; }
+.plan-row.plan-header { background:var(--bg); border-bottom:2px solid var(--border-s); }
+.plan-cell {
+  padding:12px 14px;
+  font-size:12px;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.plan-cell.ph { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); padding:10px 14px; }
+.plan-cell.c-id    { color:var(--text-3); font-size:11px; }
+.plan-cell.c-name  { font-weight:700; white-space:normal; }
+.plan-cell.c-type  { color:var(--text-2); white-space:normal; font-size:11px; }
+.plan-cell.c-date  { font-weight:600; font-size:11px; }
+.plan-cell.c-days  { font-weight:800; font-size:13px; }
+.plan-cell.c-badge { }
+
+/* Badges */
+.badge { display:inline-flex; align-items:center; font-size:10px; font-weight:700; padding:4px 10px; border-radius:20px; white-space:nowrap; letter-spacing:.02em; gap:4px; }
+.badge::before { content:''; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.b-red   { background:var(--red-l);   color:#C0152A; } .b-red::before   { background:var(--red); }
+.b-amber { background:var(--amber-l); color:#92400E; } .b-amber::before { background:var(--amber); }
+.b-green { background:var(--green-l); color:#166534; } .b-green::before { background:var(--green); }
+.b-teal  { background:var(--blue-l);  color:#1D4ED8; } .b-teal::before  { background:var(--blue); }
+.b-navy  { background:#EFF3FF;        color:var(--forest); } .b-navy::before { background:var(--forest); }
+
+/* Facility chips */
+.chip { display:inline-block; font-size:10px; font-weight:700; padding:3px 9px; border-radius:6px; letter-spacing:.02em; }
+.c1 { background:#EEF2FF; color:#3730A3; }
+.c2 { background:var(--green-l); color:#166534; }
+.c3 { background:var(--amber-l); color:#92400E; }
+
+/* Progress */
+.prog { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.prog:last-child { margin-bottom:0; }
+.prog-label { font-size:12px; color:var(--text); flex:1; min-width:0; font-weight:500; }
+.prog-track { flex:2; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.prog-fill  { height:100%; border-radius:4px; transition:width .6s ease; }
+.prog-pct   { font-size:12px; font-weight:800; min-width:38px; text-align:right; }
+.prog-note  { font-size:11px; color:var(--text-3); margin-bottom:14px; padding-left:4px; margin-top:-10px; }
+
+/* Timeline */
+.tl-item { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.tl-item:last-child { border-bottom:none; }
+.tl-dot { width:10px; height:10px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+.tl-body { flex:1; min-width:0; }
+.tl-title { font-size:12px; font-weight:700; }
+.tl-sub   { font-size:11px; color:var(--text-2); margin-top:3px; }
+.tl-right { text-align:right; flex-shrink:0; }
+.tl-date  { font-size:11px; font-weight:700; color:var(--text); }
+.tl-days  { font-size:11px; font-weight:700; margin-top:2px; }
+
+/* Calendar */
+.cal { display:grid; grid-template-columns:repeat(13,1fr); gap:3px; }
+.cal-hdr { font-size:8px; color:var(--text-3); text-align:center; font-weight:700; padding:2px 0; }
+.cal-cell { aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; cursor:default; transition:transform .1s; }
+.cal-cell:hover { transform:scale(1.3); }
+
+/* Donut legend */
+.donut-row { display:flex; align-items:center; gap:20px; }
+.donut-leg { flex:1; display:flex; flex-direction:column; gap:9px; }
+.dl-row    { display:flex; align-items:center; gap:8px; }
+.dl-dot    { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.dl-label  { font-size:12px; color:var(--text-2); flex:1; }
+.dl-val    { font-size:12px; font-weight:800; color:var(--text); }
+
+/* General table (for detail pages) */
+.tbl { width:100%; border-collapse:collapse; }
+.tbl th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); padding:10px 14px; text-align:left; border-bottom:2px solid var(--border); background:var(--bg); white-space:nowrap; }
+.tbl td { padding:11px 14px; border-bottom:1px solid var(--border); font-size:12px; color:var(--text); vertical-align:middle; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tbody tr:hover td { background:#FAFBFE; }
+.tbl-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+.empty { padding:40px 20px; text-align:center; color:var(--text-3); font-size:13px; }
+
+/* Section header */
+.section-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); margin-bottom:12px; padding-top:4px; }
+
+/* ── MOBILE ── */
+@media(max-width:768px) {
+  .content { padding:12px; }
+  .kpi-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .kpi { padding:14px 14px 18px; }
+  .kpi-value { font-size:22px; }
+  .g2, .g3 { grid-template-columns:1fr; gap:12px; }
+  .gfull { margin-bottom:12px; }
+  .topbar { padding:0 16px; height:56px; }
+  .brand-name { font-size:12px; max-width:160px; }
+  .tbar-date { display:none; }
+  .tbar-file { display:none !important; }
+  .nav-strip { padding:0 12px; }
+  .ftab, .ptab { padding:0 12px; font-size:11px; }
+  /* Plan rows become stacked cards on mobile */
+  .plan-list { display:flex; flex-direction:column; gap:10px; padding:12px; }
+  .plan-row.plan-header { display:none; }
+  .plan-row {
+    display:flex; flex-direction:column; grid-template-columns:none;
+    background:var(--bg); border-radius:var(--radius-s);
+    border:1px solid var(--border); padding:12px 14px; gap:6px;
+    box-shadow:var(--shadow);
+  }
+  .plan-row:hover { background:var(--card); }
+  .plan-cell { padding:0; white-space:normal; overflow:visible; text-overflow:clip; }
+  .plan-cell.c-id   { font-size:10px; }
+  .plan-cell.c-name { font-size:14px; }
+  .plan-cell.c-days { font-size:15px; }
+  .mobile-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+}
+
+@media(max-width:480px) {
+  .kpi-row { grid-template-columns:1fr 1fr; }
+  .upload-card { padding:32px 24px; }
+  .brand-name { font-size:11px; max-width:130px; }
+}
+
+@media(min-width:769px) {
+  .mobile-row { display:contents; }
+}
+
+/* ── DARK MODE ── */
+html.dark {
+  --bg:       #0D1117;
+  --card:     #161B22;
+  --border:   #21262D;
+  --border-s: #30363D;
+  --text:     #E6EDF3;
+  --text-2:   #8B949E;
+  --text-3:   #484F58;
+  --shadow:   0 1px 3px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.2);
+  --shadow-m: 0 4px 16px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.2);
+  --green-xl: #0D2B1F;
+  --green-l:  #0F3324;
+  --amber-l:  #2D1F00;
+  --red-l:    #2A0A0A;
+  --blue-l:   #0D1B38;
+}
+html.dark body { background:var(--bg); }
+html.dark .topbar { background:#010409; border-bottom:1px solid #21262D; }
+html.dark .nav-strip { background:#0D1117; border-bottom-color:#21262D; }
+html.dark .plan-row:hover { background:#1C2128; }
+html.dark .plan-row.plan-header { background:#0D1117; }
+html.dark tbody tr:hover td { background:#1C2128; }
+html.dark .tbl th { background:#0D1117; }
+html.dark .upload-card { background:#161B22; border:1px solid #21262D; }
+html.dark .c1 { background:#1A1F3A; color:#A5B4FC; }
+html.dark .c2 { background:#0F3324; color:#6EE7B7; }
+html.dark .c3 { background:#2D1F00; color:#FCD34D; }
+html.dark .b-red   { background:#2A0A0A; color:#FCA5A5; }
+html.dark .b-amber { background:#2D1F00; color:#FCD34D; }
+html.dark .b-green { background:#0F3324; color:#6EE7B7; }
+html.dark .b-teal  { background:#0D1B38; color:#93C5FD; }
+html.dark .b-navy  { background:#1A1F3A; color:#A5B4FC; }
+
+/* Smooth theme transition */
+body, .topbar, .nav-strip, .card, .kpi, .plan-row, .upload-card, .upload-zone,
+.tbar-file, .badge, .chip, .tl-item, .prog-track, .tbl th, .tbl td {
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+
+/* Theme toggle button */
+.btn-theme {
+  width:36px; height:36px; border-radius:10px;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.8); cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s; flex-shrink:0;
+}
+.btn-theme:hover { background:rgba(255,255,255,.16); }
+
 </style>
 </head>
 <body>
@@ -140,65 +336,92 @@ tbody tr:hover td{background:#FAFBFD}
 <!-- Upload screen -->
 <div id="upload-screen">
   <div class="upload-card">
-    <div class="upload-icon">&#128202;</div>
+    <div class="upload-logo">E</div>
+    <div class="upload-org">Care Dashboard</div>
     <div class="upload-title">Ebenezer Residential Care Home Ltd</div>
     <div class="upload-sub">Upload the Ebenezer care tracker to view live compliance and operational data across all facilities.</div>
     <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
       <input type="file" id="file-input" accept=".xlsx,.xls">
+      <div class="upload-zone-icon">&#128206;</div>
       <div class="upload-zone-text">
         <strong>Click to upload</strong> or drag and drop<br>
-        <span style="font-size:11px">Ebenezer Real Time Monitoring Online.xlsx</span>
+        Ebenezer Real Time Monitoring Online.xlsx
       </div>
     </div>
-    <div class="upload-note">The file is read locally in your browser. Nothing is uploaded to any server.</div>
+    <div class="upload-note">&#128274; Your file is read locally. Nothing is sent to any server.</div>
     <div class="error-msg" id="error-msg"></div>
   </div>
 </div>
 
 <!-- Dashboard -->
 <div id="dashboard">
+
+  <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-left">
       <div class="brand-mark">E</div>
-      <div class="brand-name">Ebenezer Residential Care Home Ltd</div>
+      <div class="brand-text">
+        <div class="brand-name">Ebenezer Residential Care Home Ltd</div>
+        <div class="brand-sub">Care Operations Dashboard</div>
+      </div>
     </div>
     <div class="topbar-right">
       <span class="tbar-file" id="tbar-file"></span>
-      <span class="tbar-meta" id="tbar-date"></span>
-      <button class="btn-reload" onclick="resetToUpload()">&#8635; Change file</button>
+      <span class="tbar-date" id="tbar-date"></span>
+      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Toggle dark/light mode">&#9728;&#65039;</button>
+      <button class="btn-reload" onclick="resetToUpload()">&#8635; Upload</button>
     </div>
   </div>
 
-  <div class="filterbar" id="filterbar"></div>
-
-  <div class="pagetabs">
+  <!-- Combined facility filter + page tabs in one strip -->
+  <div class="nav-strip" id="nav-strip">
     <div class="ptab active" onclick="showPage('overview',this)">Overview</div>
     <div class="ptab" onclick="showPage('renewals',this)">Support plans</div>
     <div class="ptab" onclick="showPage('dols',this)">DoLS</div>
     <div class="ptab" onclick="showPage('expenses',this)">Expenses</div>
+    <div class="nav-divider"></div>
+    <div class="ftab active" onclick="setFac('all',this)" id="ftab-all">All facilities</div>
+    <!-- facility tabs injected here by JS -->
   </div>
 
   <div class="content">
 
+    <!-- OVERVIEW PAGE -->
     <div class="page active" id="page-overview">
       <div class="kpi-row" id="kpi-row"></div>
-      <div class="g2">
+
+      <!-- Support plan renewals — FULL WIDTH with clean columns -->
+      <div class="gfull">
         <div class="card">
-          <div class="card-head"><div><div class="card-title">Support plan renewals</div><div class="card-sub">Most urgent first</div></div></div>
+          <div class="card-head">
+            <div><div class="card-title">Support plan renewals</div><div class="card-sub">Sorted by urgency &mdash; most critical first</div></div>
+          </div>
           <div class="card-body p0">
-            <table><thead><tr><th>Client</th><th>Facility</th><th>Plan type</th><th>Due date</th><th>Days</th><th>Status</th></tr></thead><tbody id="ov-sp-table"></tbody></table>
+            <div class="plan-list" id="ov-sp-list"></div>
           </div>
         </div>
+      </div>
+
+      <div class="g2">
+        <!-- DoLS -->
         <div class="card">
           <div class="card-head"><div class="card-title">DoLS expiry timeline</div></div>
           <div class="card-body p0" style="padding:0 20px" id="ov-dols-tl"></div>
         </div>
+        <!-- Facility compliance -->
+        <div class="card">
+          <div class="card-head"><div class="card-title">Plan compliance by facility</div></div>
+          <div class="card-body" id="fac-prog"></div>
+        </div>
       </div>
-      <div class="g3">
+
+      <div class="g2">
+        <!-- Spend bar -->
         <div class="card">
           <div class="card-head"><div class="card-title">Monthly spend by facility</div></div>
           <div class="card-body"><div style="position:relative;height:200px"><canvas id="ch-exp-bar"></canvas></div></div>
         </div>
+        <!-- Category donut -->
         <div class="card">
           <div class="card-head"><div class="card-title">Spend by category</div></div>
           <div class="card-body">
@@ -208,58 +431,65 @@ tbody tr:hover td{background:#FAFBFD}
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-head"><div class="card-title">Plan compliance by facility</div></div>
-          <div class="card-body" id="fac-prog"></div>
-        </div>
       </div>
+
+      <!-- Calendar -->
       <div class="gfull">
         <div class="card">
-          <div class="card-head"><div><div class="card-title">Renewal calendar — next 12 weeks</div><div class="card-sub">Each cell = number of plans due that week</div></div></div>
+          <div class="card-head">
+            <div><div class="card-title">Renewal calendar &mdash; next 12 weeks</div><div class="card-sub">Each cell = plans due that week. Hover for details.</div></div>
+          </div>
           <div class="card-body">
-            <div class="cal" id="cal-grid" style="margin-bottom:10px"></div>
-            <div style="display:flex;gap:16px;font-size:11px;color:var(--muted)">
-              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red);display:inline-block"></span>Overdue</span>
-              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--amber);display:inline-block"></span>Due &lt;30d</span>
-              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--teal);display:inline-block"></span>On track</span>
-              <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:var(--border);display:inline-block"></span>None due</span>
+            <div class="cal" id="cal-grid" style="margin-bottom:12px"></div>
+            <div style="display:flex;gap:16px;font-size:11px;color:var(--text-3);flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--red);display:inline-block"></span>Overdue</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--amber);display:inline-block"></span>Due within 30 days</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--green);display:inline-block"></span>On track</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:var(--border);display:inline-block"></span>None due</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- SUPPORT PLANS PAGE -->
     <div class="page" id="page-renewals">
       <div class="kpi-row" id="sp-kpi-row"></div>
       <div class="gfull">
         <div class="card">
           <div class="card-head"><div><div class="card-title">All support plans</div><div class="card-sub">Filter by facility using the tabs above</div></div></div>
           <div class="card-body p0">
-            <table><thead><tr><th>ID</th><th>Client</th><th>Facility</th><th>Plan type</th><th>Last reviewed</th><th>Due date</th><th>Days</th><th>Key worker</th><th>Status</th></tr></thead><tbody id="sp-full-table"></tbody></table>
+            <div class="tbl-wrap">
+              <table class="tbl"><thead><tr><th>ID</th><th>Client</th><th>Facility</th><th>Plan type</th><th>Last reviewed</th><th>Due date</th><th>Days</th><th>Key worker</th><th>Status</th></tr></thead><tbody id="sp-full-table"></tbody></table>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- DoLS PAGE -->
     <div class="page" id="page-dols">
       <div class="kpi-row" id="dols-kpi-row"></div>
       <div class="g2">
         <div class="card">
           <div class="card-head"><div class="card-title">All DoLS authorisations</div></div>
           <div class="card-body p0">
-            <table><thead><tr><th>ID</th><th>Client</th><th>Facility</th><th>Granted</th><th>Expiry</th><th>Days</th><th>Renewal</th><th>Status</th></tr></thead><tbody id="dols-full-table"></tbody></table>
+            <div class="tbl-wrap">
+              <table class="tbl"><thead><tr><th>ID</th><th>Client</th><th>Facility</th><th>Granted</th><th>Expiry</th><th>Days</th><th>Renewal</th><th>Status</th></tr></thead><tbody id="dols-full-table"></tbody></table>
+            </div>
           </div>
         </div>
         <div class="card">
-          <div class="card-head"><div class="card-title">DoLS status breakdown</div></div>
+          <div class="card-head"><div class="card-title">Status breakdown</div></div>
           <div class="card-body">
             <div style="position:relative;height:200px"><canvas id="ch-dols-donut"></canvas></div>
-            <div id="dols-leg" style="margin-top:14px;display:flex;flex-direction:column;gap:7px"></div>
+            <div id="dols-leg" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- EXPENSES PAGE -->
     <div class="page" id="page-expenses">
       <div class="kpi-row" id="exp-kpi-row"></div>
       <div class="g2">
@@ -276,41 +506,37 @@ tbody tr:hover td{background:#FAFBFD}
         <div class="card">
           <div class="card-head"><div class="card-title">All expense records</div></div>
           <div class="card-body p0">
-            <table><thead><tr><th>ID</th><th>Facility</th><th>Month</th><th>Category</th><th>Description</th><th>Supplier</th><th>Net</th><th>VAT</th><th>Total</th><th>Approved by</th></tr></thead><tbody id="exp-full-table"></tbody></table>
+            <div class="tbl-wrap">
+              <table class="tbl"><thead><tr><th>ID</th><th>Facility</th><th>Month</th><th>Category</th><th>Description</th><th>Supplier</th><th>Net</th><th>VAT</th><th>Total</th><th>Approved by</th></tr></thead><tbody id="exp-full-table"></tbody></table>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /content -->
+</div><!-- /dashboard -->
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────────────────────────────────
 var DATA = { facilities:[], clients:[], supportPlans:[], dols:[], expenses:[] };
 var activeFac = 'all';
 var charts = {};
 var TODAY = new Date(); TODAY.setHours(0,0,0,0);
+var isMobile = window.innerWidth < 769;
+window.addEventListener('resize', function(){ isMobile = window.innerWidth < 769; });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UTILITIES
-// ─────────────────────────────────────────────────────────────────────────────
 function daysFrom(d) {
   if (!d) return null;
   var dt = (d instanceof Date) ? d : new Date(d);
   if (isNaN(dt)) return null;
   return Math.round((dt - TODAY) / 86400000);
 }
-
 function fmtDate(d) {
   if (!d) return '—';
   var dt = (d instanceof Date) ? d : new Date(d);
   if (isNaN(dt)) return '—';
   return dt.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
 }
-
 function excelToDate(v) {
   if (!v) return null;
   if (v instanceof Date) return isNaN(v) ? null : v;
@@ -322,25 +548,14 @@ function excelToDate(v) {
   if (typeof v === 'string' && v.trim()) {
     var d2 = new Date(v);
     if (!isNaN(d2)) return d2;
-    // try DD/MM/YYYY
     var parts = v.trim().split('/');
-    if (parts.length === 3) {
-      var d3 = new Date(parts[2], parts[1]-1, parts[0]);
-      if (!isNaN(d3)) return d3;
-    }
+    if (parts.length === 3) { var d3 = new Date(parts[2], parts[1]-1, parts[0]); if (!isNaN(d3)) return d3; }
   }
   return null;
 }
-
-function str(v) {
-  if (v === null || v === undefined) return '';
-  return String(v).trim();
-}
-
-function num(v) {
-  var n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
-  return isNaN(n) ? 0 : n;
-}
+function str(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
+function num(v) { var n = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? 0 : n; }
+function gbp(n) { return '£' + Math.round(n).toLocaleString('en-GB'); }
 
 function planStatus(due) {
   var d = daysFrom(due);
@@ -350,7 +565,6 @@ function planStatus(due) {
   if (d <= 30) return 'Due within 30 days';
   return 'On track';
 }
-
 function dolsStatus(exp) {
   var d = daysFrom(exp);
   if (d === null) return 'Not yet granted';
@@ -361,96 +575,51 @@ function dolsStatus(exp) {
 }
 
 function badge(s) {
-  var cls = {
-    'OVERDUE':'b-red', 'EXPIRED':'b-red', 'Expires in 14 days':'b-red',
-    'Due within 30 days':'b-amber', 'Review within 30 days':'b-amber',
-    'On track':'b-green', 'Active':'b-teal'
-  }[s] || 'b-navy';
+  var cls = {'OVERDUE':'b-red','EXPIRED':'b-red','Expires in 14 days':'b-red','Due within 30 days':'b-amber','Review within 30 days':'b-amber','On track':'b-green','Active':'b-teal'}[s] || 'b-navy';
   return '<span class="badge ' + cls + '">' + s + '</span>';
 }
-
 function chip(facId) {
   var idx = DATA.facilities.findIndex(function(f){ return f.id === facId; });
-  var cls = ['c1','c2','c3'][Math.max(0, idx) % 3];
+  var cls = ['c1','c2','c3'][Math.max(0,idx) % 3];
   var fac = DATA.facilities.find(function(f){ return f.id === facId; });
-  var name = fac ? fac.name.split(' ')[0] : facId;
-  return '<span class="chip ' + cls + '">' + name + '</span>';
+  return '<span class="chip ' + cls + '">' + (fac ? fac.name.split(' ')[0] : facId) + '</span>';
 }
-
 function fil(arr, key) {
   if (activeFac === 'all') return arr;
-  return arr.filter(function(x){ return x[key || 'facId'] === activeFac; });
+  return arr.filter(function(x){ return x[key||'facId'] === activeFac; });
 }
 
-function gbp(n) {
-  return '£' + Math.round(n).toLocaleString('en-GB');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE HANDLING
-// ─────────────────────────────────────────────────────────────────────────────
-function showError(msg) {
-  var el = document.getElementById('error-msg');
-  el.textContent = msg;
-  el.style.display = 'block';
-}
-
+// ── FILE HANDLING ─────────────────────────────────────────────────────────────
+function showError(msg) { var e = document.getElementById('error-msg'); e.textContent = msg; e.style.display = 'block'; }
 function resetToUpload() {
   document.getElementById('upload-screen').style.display = 'flex';
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('error-msg').style.display = 'none';
   document.getElementById('file-input').value = '';
 }
-
-document.getElementById('file-input').addEventListener('change', function(e) {
-  var file = e.target.files[0];
-  if (file) readFile(file);
-});
-
+document.getElementById('file-input').addEventListener('change', function(e) { if (e.target.files[0]) readFile(e.target.files[0]); });
 var dz = document.getElementById('drop-zone');
 dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag'); });
 dz.addEventListener('dragleave', function(){ dz.classList.remove('drag'); });
-dz.addEventListener('drop', function(e){
-  e.preventDefault(); dz.classList.remove('drag');
-  var file = e.dataTransfer.files[0];
-  if (file) readFile(file);
-});
+dz.addEventListener('drop', function(e){ e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
 
 function readFile(file) {
   document.getElementById('error-msg').style.display = 'none';
   var reader = new FileReader();
   reader.onload = function(e) {
-    try {
-      var wb = XLSX.read(e.target.result, { type:'array', cellDates:true, cellNF:false });
-      parseAndRender(wb, file.name);
-    } catch(err) {
-      showError('Could not read file: ' + err.message);
-    }
+    try { var wb = XLSX.read(e.target.result, {type:'array', cellDates:true, cellNF:false}); parseAndRender(wb, file.name); }
+    catch(err) { showError('Could not read file: ' + err.message); }
   };
-  reader.onerror = function() { showError('Failed to read the file. Please try again.'); };
+  reader.onerror = function(){ showError('Failed to read the file. Please try again.'); };
   reader.readAsArrayBuffer(file);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PARSING  — header is always row 3 (index 2) in this template
-// ─────────────────────────────────────────────────────────────────────────────
+// ── PARSING ───────────────────────────────────────────────────────────────────
 function getSheet(wb, name) {
-  // Find sheet by exact name or partial match
   var ws = wb.Sheets[name];
-  if (!ws) {
-    var found = wb.SheetNames.find(function(n){
-      return n.toLowerCase().indexOf(name.toLowerCase()) !== -1;
-    });
-    ws = found ? wb.Sheets[found] : null;
-  }
+  if (!ws) { var found = wb.SheetNames.find(function(n){ return n.toLowerCase().indexOf(name.toLowerCase()) !== -1; }); ws = found ? wb.Sheets[found] : null; }
   if (!ws) return [];
-  // Our template always has title in row 1, subtitle in row 2, headers in row 3
-  // So we tell SheetJS to start from row 3 (range index 2)
-  try {
-    return XLSX.utils.sheet_to_json(ws, { defval:'', range:2 });
-  } catch(e) {
-    return [];
-  }
+  try { return XLSX.utils.sheet_to_json(ws, {defval:'', range:2}); } catch(e) { return []; }
 }
 
 function parseAndRender(wb, filename) {
@@ -460,116 +629,45 @@ function parseAndRender(wb, filename) {
   var dolsRows = getSheet(wb, 'DoLS');
   var expRows  = getSheet(wb, 'Expenses');
 
-  // Log what we found to help debug
   console.log('Sheet names:', wb.SheetNames);
-  console.log('Facilities rows:', facRows.length, facRows[0] ? Object.keys(facRows[0]) : 'empty');
-  console.log('Support Plans rows:', spRows.length, spRows[0] ? Object.keys(spRows[0]) : 'empty');
-  console.log('Expenses rows:', expRows.length);
+  console.log('Facilities:', facRows.length, 'Plans:', spRows.length, 'DoLS:', dolsRows.length, 'Expenses:', expRows.length);
 
-  DATA.facilities = facRows.map(function(r){
-    return {
-      id:      str(r['Facility ID']),
-      name:    str(r['Facility Name']),
-      borough: str(r['Borough']),
-      manager: str(r['Registered Manager']),
-      beds:    num(r['Registered Beds'])
-    };
-  }).filter(function(f){ return f.id; });
+  DATA.facilities = facRows.map(function(r){ return { id:str(r['Facility ID']), name:str(r['Facility Name']), borough:str(r['Borough']), manager:str(r['Registered Manager']), beds:num(r['Registered Beds']) }; }).filter(function(f){ return f.id; });
+  DATA.clients = cliRows.map(function(r){ return { id:str(r['Client ID']), initials:str(r['Client Initials']), facId:str(r['Facility ID']), funding:str(r['Funding Type']), active:str(r['Active']).toLowerCase() !== 'no' }; }).filter(function(c){ return c.id; });
+  DATA.supportPlans = spRows.map(function(r){ var due = excelToDate(r['Next Review Due']); return { id:str(r['Record ID']), clientId:str(r['Client ID']), initials:str(r['Client Initials']), facId:str(r['Facility ID']), planType:str(r['Plan Type']), lastReview:excelToDate(r['Last Review Date']), dueDate:due, keyWorker:str(r['Assigned Key Worker']), status:planStatus(due) }; }).filter(function(s){ return s.facId; });
+  DATA.dols = dolsRows.map(function(r){ var exp = excelToDate(r['Expiry Date']); return { id:str(r['Record ID']), clientId:str(r['Client ID']), initials:str(r['Client Initials']), facId:str(r['Facility ID']), granted:excelToDate(r['Date Granted']), expiry:exp, renewal:str(r['Renewal Applied']), status:dolsStatus(exp) }; }).filter(function(d){ return d.facId; });
+  DATA.expenses = expRows.map(function(r){ var net=num(r['Amount (£)']), vat=num(r['VAT (£)']), total=num(r['Total (£)']); return { id:str(r['Record ID']), facId:str(r['Facility ID']), month:str(r['Month']), year:num(r['Year']), category:str(r['Category']), desc:str(r['Description']), supplier:str(r['Supplier']), net:net, vat:vat, total:total||(net+vat), approver:str(r['Approved By']) }; }).filter(function(e){ return e.facId; });
 
-  DATA.clients = cliRows.map(function(r){
-    return {
-      id:       str(r['Client ID']),
-      initials: str(r['Client Initials']),
-      facId:    str(r['Facility ID']),
-      funding:  str(r['Funding Type']),
-      active:   str(r['Active']).toLowerCase() !== 'no'
-    };
-  }).filter(function(c){ return c.id; });
+  if (!DATA.facilities.length && !DATA.supportPlans.length) { showError('No data found. Make sure you are uploading Ebenezer Real Time Monitoring Online.xlsx with data from row 4 onwards.'); return; }
 
-  DATA.supportPlans = spRows.map(function(r){
-    var due = excelToDate(r['Next Review Due']);
-    return {
-      id:         str(r['Record ID']),
-      clientId:   str(r['Client ID']),
-      initials:   str(r['Client Initials']),
-      facId:      str(r['Facility ID']),
-      planType:   str(r['Plan Type']),
-      lastReview: excelToDate(r['Last Review Date']),
-      dueDate:    due,
-      keyWorker:  str(r['Assigned Key Worker']),
-      status:     planStatus(due)
-    };
-  }).filter(function(s){ return s.facId; });
-
-  DATA.dols = dolsRows.map(function(r){
-    var exp = excelToDate(r['Expiry Date']);
-    return {
-      id:       str(r['Record ID']),
-      clientId: str(r['Client ID']),
-      initials: str(r['Client Initials']),
-      facId:    str(r['Facility ID']),
-      granted:  excelToDate(r['Date Granted']),
-      expiry:   exp,
-      renewal:  str(r['Renewal Applied']),
-      status:   dolsStatus(exp)
-    };
-  }).filter(function(d){ return d.facId; });
-
-  DATA.expenses = expRows.map(function(r){
-    var net   = num(r['Amount (£)']);
-    var vat   = num(r['VAT (£)']);
-    var total = num(r['Total (£)']);
-    return {
-      id:       str(r['Record ID']),
-      facId:    str(r['Facility ID']),
-      month:    str(r['Month']),
-      year:     num(r['Year']),
-      category: str(r['Category']),
-      desc:     str(r['Description']),
-      supplier: str(r['Supplier']),
-      net:      net,
-      vat:      vat,
-      total:    total || (net + vat)
-    };
-  }).filter(function(e){ return e.facId; });
-
-  console.log('Parsed — facilities:', DATA.facilities.length,
-    'plans:', DATA.supportPlans.length,
-    'dols:', DATA.dols.length,
-    'expenses:', DATA.expenses.length);
-
-  if (!DATA.facilities.length && !DATA.supportPlans.length) {
-    showError('No data found. Make sure you are uploading Ebenezer Real Time Monitoring Online.xlsx and that the Facilities and Support Plans sheets contain data from row 4 onwards.');
-    return;
-  }
-
-  document.getElementById('tbar-file').textContent = filename;
+  var f = document.getElementById('tbar-file'); f.textContent = filename; f.classList.add('show');
   document.getElementById('tbar-date').textContent = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-  buildFilterBar();
+  buildFacTabs();
   renderAll();
   document.getElementById('upload-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FILTER BAR + PAGE SWITCHING
-// ─────────────────────────────────────────────────────────────────────────────
-function buildFilterBar() {
-  var el = document.getElementById('filterbar');
-  var html = '<div class="ftab active" onclick="setFac(\'all\',this)">All facilities</div>';
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function buildFacTabs() {
+  var strip = document.getElementById('nav-strip');
+  // Remove old facility tabs
+  var old = strip.querySelectorAll('.ftab:not(#ftab-all)');
+  old.forEach(function(t){ t.remove(); });
   DATA.facilities.forEach(function(f){
-    html += '<div class="ftab" onclick="setFac(\'' + f.id + '\',this)">' + f.name + '</div>';
+    var t = document.createElement('div');
+    t.className = 'ftab';
+    t.textContent = f.name;
+    t.onclick = function(){ setFac(f.id, t); };
+    strip.appendChild(t);
   });
-  el.innerHTML = html;
 }
-
 function setFac(id, el) {
   activeFac = id;
   document.querySelectorAll('.ftab').forEach(function(t){ t.classList.remove('active'); });
   el.classList.add('active');
   renderAll();
 }
-
 function showPage(name, el) {
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.ptab').forEach(function(t){ t.classList.remove('active'); });
@@ -577,403 +675,263 @@ function showPage(name, el) {
   el.classList.add('active');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RENDER ALL
-// ─────────────────────────────────────────────────────────────────────────────
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
 function renderAll() {
-  renderKPIs();
-  renderSPTable('ov-sp-table', 8);
-  renderDoLSTimeline();
-  renderExpBar();
-  renderCatDonut();
-  renderFacProgress();
-  renderCalendar();
-  renderSPPage();
-  renderDoLSPage();
-  renderExpPage();
+  renderKPIs(); renderSPList(); renderDoLSTimeline(); renderFacProgress();
+  renderExpBar(); renderCatDonut(); renderCalendar();
+  renderSPPage(); renderDoLSPage(); renderExpPage();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// KPI CARDS
-// ─────────────────────────────────────────────────────────────────────────────
+// ── KPI CARDS ─────────────────────────────────────────────────────────────────
 function renderKPIs() {
-  var sp = fil(DATA.supportPlans);
-  var dl = fil(DATA.dols);
-  var ex = fil(DATA.expenses);
-  var cl = fil(DATA.clients);
-
-  var overdue  = sp.filter(function(x){ return x.status === 'OVERDUE'; }).length;
-  var due30    = sp.filter(function(x){ return x.status === 'Due within 30 days' || x.status === 'Expires in 14 days'; }).length;
-  var dolsWarn = dl.filter(function(x){ return x.status !== 'Active' && x.status !== 'Not yet granted'; }).length;
+  var sp = fil(DATA.supportPlans), dl = fil(DATA.dols), ex = fil(DATA.expenses), cl = fil(DATA.clients);
+  var overdue  = sp.filter(function(x){ return x.status==='OVERDUE'; }).length;
+  var due30    = sp.filter(function(x){ return x.status==='Due within 30 days'||x.status==='Expires in 14 days'; }).length;
+  var dolsWarn = dl.filter(function(x){ return x.status!=='Active'&&x.status!=='Not yet granted'; }).length;
   var clients  = cl.filter(function(x){ return x.active; }).length;
-  var spend    = ex.reduce(function(s,e){ return s + e.total; }, 0);
-
+  var spend    = ex.reduce(function(s,e){ return s+e.total; }, 0);
   document.getElementById('kpi-row').innerHTML =
-    kpiCard('k-red',   'Overdue plans',      overdue,  'immediate action needed') +
-    kpiCard('k-amber', 'Due within 30 days', due30,    'support plans') +
-    kpiCard('k-red',   'DoLS alerts',        dolsWarn, 'expiring or expired') +
-    kpiCard('k-teal',  'Active clients',     clients,  activeFac==='all' ? DATA.facilities.length + ' facilities' : '1 facility') +
-    kpiCard('k-navy',  'Total spend',        gbp(spend), 'all months on record', true);
+    kpi('k-red',  '&#9888;', 'Overdue plans',      overdue,  'Immediate action needed') +
+    kpi('k-amber','&#128337;','Due within 30 days', due30,    'Support plans') +
+    kpi('k-red',  '&#128274;','DoLS alerts',        dolsWarn, 'Expiring or expired') +
+    kpi('k-teal', '&#128101;','Active clients',     clients,  activeFac==='all'?DATA.facilities.length+' facilities':'1 facility') +
+    kpi('k-navy', '&#128181;','Total spend',        '<span class="small">'+gbp(spend)+'</span>', 'All months on record');
+}
+function kpi(cls, icon, label, value, sub) {
+  return '<div class="kpi '+cls+'"><div class="kpi-accent"></div><div class="kpi-icon">'+icon+'</div><div class="kpi-label">'+label+'</div><div class="kpi-value">'+value+'</div><div class="kpi-sub">'+sub+'</div></div>';
 }
 
-function kpiCard(cls, label, value, sub, small) {
-  return '<div class="kpi ' + cls + '">' +
-    '<div class="kpi-label">' + label + '</div>' +
-    '<div class="kpi-value" style="' + (small ? 'font-size:20px' : '') + '">' + value + '</div>' +
-    '<div class="kpi-sub">' + sub + '</div></div>';
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUPPORT PLAN TABLE
-// ─────────────────────────────────────────────────────────────────────────────
-function renderSPTable(elId, limit) {
+// ── SUPPORT PLAN LIST (overview — clean card design) ──────────────────────────
+function renderSPList() {
   var data = fil(DATA.supportPlans).slice().sort(function(a,b){
-    var da = daysFrom(a.dueDate); var db = daysFrom(b.dueDate);
-    if (da === null) return 1; if (db === null) return -1;
-    return da - db;
-  });
-  if (limit) data = data.slice(0, limit);
-  var tb = document.getElementById(elId);
-  if (!tb) return;
-  if (!data.length) { tb.innerHTML = '<tr><td colspan="9" class="empty">No support plans found</td></tr>'; return; }
-  tb.innerHTML = data.map(function(sp){
+    var da=daysFrom(a.dueDate), db=daysFrom(b.dueDate);
+    if (da===null) return 1; if (db===null) return -1; return da-db;
+  }).slice(0, 10);
+  var el = document.getElementById('ov-sp-list');
+  if (!el) return;
+  if (!data.length) { el.innerHTML = '<div class="empty">No support plans found</div>'; return; }
+
+  var html = '';
+  // Header row (hidden on mobile via CSS)
+  html += '<div class="plan-row plan-header">' +
+    '<div class="plan-cell ph">ID</div>' +
+    '<div class="plan-cell ph">Client</div>' +
+    '<div class="plan-cell ph">Facility</div>' +
+    '<div class="plan-cell ph">Plan type</div>' +
+    '<div class="plan-cell ph">Due date</div>' +
+    '<div class="plan-cell ph">Days / Status</div>' +
+    '</div>';
+
+  data.forEach(function(sp) {
     var d = daysFrom(sp.dueDate);
-    var dStr = d === null ? '—' : d < 0 ? Math.abs(d)+'d overdue' : d+'d';
-    var dCol = d === null ? 'var(--muted)' : d < 0 ? 'var(--red)' : d <= 30 ? 'var(--amber)' : 'var(--teal)';
-    return '<tr>' +
-      '<td>' + (sp.id || '—') + '</td>' +
-      '<td><strong>' + (sp.initials || '—') + '</strong></td>' +
-      '<td>' + chip(sp.facId) + '</td>' +
-      '<td style="color:var(--muted)">' + sp.planType + '</td>' +
-      '<td>' + fmtDate(sp.lastReview) + '</td>' +
-      '<td><strong>' + fmtDate(sp.dueDate) + '</strong></td>' +
-      '<td style="font-weight:700;color:' + dCol + '">' + dStr + '</td>' +
-      '<td>' + (sp.keyWorker || '—') + '</td>' +
-      '<td>' + badge(sp.status) + '</td></tr>';
-  }).join('');
+    var dStr = d===null ? '—' : d<0 ? Math.abs(d)+'d overdue' : d+'d';
+    var dCol = d===null ? 'var(--text-3)' : d<0 ? 'var(--red)' : d<=14 ? 'var(--red)' : d<=30 ? 'var(--amber)' : 'var(--green)';
+    html += '<div class="plan-row">' +
+      '<div class="plan-cell c-id">' + (sp.id||'—') + '</div>' +
+      '<div class="plan-cell c-name">' + (sp.initials||'—') + '</div>' +
+      '<div class="plan-cell">' + chip(sp.facId) + '</div>' +
+      '<div class="plan-cell c-type">' + sp.planType + '</div>' +
+      '<div class="plan-cell c-date">' + fmtDate(sp.dueDate) + '</div>' +
+      '<div class="plan-cell mobile-row">' +
+        '<span class="plan-cell c-days" style="color:' + dCol + ';padding:0;margin-right:8px">' + dStr + '</span>' +
+        badge(sp.status) +
+      '</div>' +
+      '</div>';
+  });
+  el.innerHTML = html;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DoLS TIMELINE
-// ─────────────────────────────────────────────────────────────────────────────
+// ── DoLS TIMELINE ─────────────────────────────────────────────────────────────
 function renderDoLSTimeline() {
-  var data = fil(DATA.dols).slice().sort(function(a,b){
-    var da = daysFrom(a.expiry); var db = daysFrom(b.expiry);
-    if (da === null) return 1; if (db === null) return -1;
-    return da - db;
-  }).slice(0, 6);
+  var data = fil(DATA.dols).slice().sort(function(a,b){ var da=daysFrom(a.expiry),db=daysFrom(b.expiry); if(da===null)return 1; if(db===null)return -1; return da-db; }).slice(0,6);
   var el = document.getElementById('ov-dols-tl');
   if (!el) return;
-  if (!data.length) { el.innerHTML = '<div class="empty">No DoLS records found</div>'; return; }
-  el.innerHTML = data.map(function(d){
+  if (!data.length) { el.innerHTML = '<div class="empty">No DoLS records</div>'; return; }
+  el.innerHTML = data.map(function(d) {
     var days = daysFrom(d.expiry);
-    var dotC = (d.status === 'EXPIRED' || d.status === 'Expires in 14 days') ? 'var(--red)'
-             : d.status === 'Review within 30 days' ? 'var(--amber)' : 'var(--teal)';
-    var dStr = days === null ? '—' : days < 0 ? Math.abs(days)+'d ago' : 'in '+days+'d';
+    var dotC = (d.status==='EXPIRED'||d.status==='Expires in 14 days') ? 'var(--red)' : d.status==='Review within 30 days' ? 'var(--amber)' : 'var(--green)';
+    var dStr = days===null ? '—' : days<0 ? Math.abs(days)+'d ago' : 'in '+days+'d';
     return '<div class="tl-item">' +
-      '<div class="tl-dot" style="background:' + dotC + '"></div>' +
-      '<div class="tl-body">' +
-        '<div class="tl-title">' + (d.initials||'—') + ' &ndash; ' + chip(d.facId) + '</div>' +
-        '<div class="tl-sub">Granted ' + fmtDate(d.granted) + ' &bull; ' + badge(d.status) + '</div>' +
-      '</div>' +
-      '<div class="tl-right">' +
-        '<div class="tl-date">' + fmtDate(d.expiry) + '</div>' +
-        '<div class="tl-days" style="color:' + dotC + '">' + dStr + '</div>' +
-      '</div></div>';
+      '<div class="tl-dot" style="background:'+dotC+'"></div>' +
+      '<div class="tl-body"><div class="tl-title">'+(d.initials||'—')+' &ndash; '+chip(d.facId)+'</div>' +
+      '<div class="tl-sub">Granted '+fmtDate(d.granted)+' &bull; '+badge(d.status)+'</div></div>' +
+      '<div class="tl-right"><div class="tl-date">'+fmtDate(d.expiry)+'</div><div class="tl-days" style="color:'+dotC+'">'+dStr+'</div></div></div>';
   }).join('');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CHARTS
-// ─────────────────────────────────────────────────────────────────────────────
-var FAC_COLORS = ['#1B3A6B','#1D9E75','#EF9F27'];
-
-function destroyChart(key) {
-  if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+// ── FACILITY PROGRESS ─────────────────────────────────────────────────────────
+function renderFacProgress() {
+  var facs = activeFac==='all' ? DATA.facilities : DATA.facilities.filter(function(f){ return f.id===activeFac; });
+  var el = document.getElementById('fac-prog'); if (!el) return;
+  el.innerHTML = facs.map(function(f) {
+    var plans = DATA.supportPlans.filter(function(x){ return x.facId===f.id; });
+    var total = plans.length||1, ok = plans.filter(function(x){ return x.status==='On track'; }).length;
+    var pct = Math.round(ok/total*100);
+    var col = pct>=80 ? 'var(--green)' : pct>=60 ? 'var(--amber)' : 'var(--red)';
+    var ov  = plans.filter(function(x){ return x.status==='OVERDUE'; }).length;
+    var du  = plans.filter(function(x){ return x.status==='Due within 30 days'||x.status==='Expires in 14 days'; }).length;
+    var note = ov ? '<span style="color:var(--red);font-weight:700">'+ov+' overdue</span>' : '';
+    if (ov&&du) note += ' &bull; ';
+    if (du) note += '<span style="color:var(--amber);font-weight:700">'+du+' due soon</span>';
+    if (!ov&&!du) note = '<span style="color:var(--green)">All on track</span>';
+    return '<div class="prog"><div class="prog-label">'+chip(f.id)+'</div><div class="prog-track"><div class="prog-fill" style="width:'+pct+'%;background:'+col+'"></div></div><div class="prog-pct" style="color:'+col+'">'+pct+'%</div></div>' +
+      '<div class="prog-note">'+note+'</div>';
+  }).join('');
 }
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+var FAC_COLORS = ['#1A4332','#40916C','#F4A261'];
+function destroyChart(k) { if (charts[k]) { charts[k].destroy(); charts[k]=null; } }
 
 function renderExpBar() {
   var ex = fil(DATA.expenses);
-  var monthOrder = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var months = Object.keys(ex.reduce(function(acc,e){ if(e.month) acc[e.month]=1; return acc; }, {}))
-    .sort(function(a,b){ return monthOrder.indexOf(a) - monthOrder.indexOf(b); }).slice(0,6);
-  var facs = activeFac === 'all' ? DATA.facilities : DATA.facilities.filter(function(f){ return f.id === activeFac; });
-
+  var MO = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var months = Object.keys(ex.reduce(function(a,e){ if(e.month)a[e.month]=1; return a; },{})).sort(function(a,b){ return MO.indexOf(a)-MO.indexOf(b); }).slice(0,6);
+  var facs = activeFac==='all' ? DATA.facilities : DATA.facilities.filter(function(f){ return f.id===activeFac; });
   destroyChart('expBar');
-  var ctx = document.getElementById('ch-exp-bar');
-  if (!ctx || !months.length) return;
-  charts.expBar = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels: months.map(function(m){ return m.slice(0,3); }),
-      datasets: facs.map(function(f,i){
-        return {
-          label: f.name.split(' ')[0],
-          data: months.map(function(m){ return ex.filter(function(e){ return e.facId===f.id && e.month===m; }).reduce(function(s,e){ return s+e.total; },0); }),
-          backgroundColor: FAC_COLORS[i % 3],
-          borderRadius: 4
-        };
-      })
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:facs.length>1,labels:{font:{size:11},boxWidth:10}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F0F0F0'},ticks:{font:{size:11},callback:function(v){ return '£'+v.toLocaleString(); }}}}}
-  });
+  var ctx = document.getElementById('ch-exp-bar'); if (!ctx||!months.length) return;
+  charts.expBar = new Chart(ctx,{ type:'bar', data:{ labels:months.map(function(m){ return m.slice(0,3); }), datasets:facs.map(function(f,i){ return { label:f.name.split(' ')[0], data:months.map(function(m){ return ex.filter(function(e){ return e.facId===f.id&&e.month===m; }).reduce(function(s,e){ return s+e.total; },0); }), backgroundColor:FAC_COLORS[i%3], borderRadius:5 }; }) }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:facs.length>1, labels:{ font:{size:11}, boxWidth:10 } } }, scales:{ x:{ grid:{display:false}, ticks:{font:{size:11}} }, y:{ grid:{color:'#F0F4FA'}, ticks:{ font:{size:11}, callback:function(v){ return '£'+v.toLocaleString(); } } } } } });
 }
 
 function renderCatDonut() {
   var ex = fil(DATA.expenses);
-  var cats = Object.keys(ex.reduce(function(acc,e){ if(e.category) acc[e.category]=1; return acc; }, {}));
+  var cats = Object.keys(ex.reduce(function(a,e){ if(e.category)a[e.category]=1; return a; },{}));
   var totals = cats.map(function(c){ return ex.filter(function(e){ return e.category===c; }).reduce(function(s,e){ return s+e.total; },0); });
-  var colors = ['#1B3A6B','#1D9E75','#EF9F27','#E24B4A','#7F77DD','#D85A30','#3B6D11'];
-
+  var colors = ['#1A4332','#40916C','#F4A261','#E63946','#7C3AED','#D85A30','#059669'];
   destroyChart('catDonut');
   var ctx = document.getElementById('ch-cat-donut');
-  if (ctx && cats.length) {
-    charts.catDonut = new Chart(ctx, {
-      type:'doughnut',
-      data:{labels:cats, datasets:[{data:totals, backgroundColor:colors, borderWidth:0}]},
-      options:{responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}}}
-    });
-  }
-  document.getElementById('cat-leg').innerHTML = cats.map(function(c,i){
-    return '<div class="dl-row"><div class="dl-dot" style="background:' + colors[i] + '"></div>' +
-      '<div class="dl-label">' + c + '</div><div class="dl-val">' + gbp(totals[i]) + '</div></div>';
-  }).join('');
+  if (ctx&&cats.length) { charts.catDonut = new Chart(ctx,{ type:'doughnut', data:{ labels:cats, datasets:[{ data:totals, backgroundColor:colors, borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false} } } }); }
+  document.getElementById('cat-leg').innerHTML = cats.map(function(c,i){ return '<div class="dl-row"><div class="dl-dot" style="background:'+colors[i]+'"></div><div class="dl-label">'+c+'</div><div class="dl-val">'+gbp(totals[i])+'</div></div>'; }).join('');
 }
 
-function renderFacProgress() {
-  var facs = activeFac === 'all' ? DATA.facilities : DATA.facilities.filter(function(f){ return f.id === activeFac; });
-  var el = document.getElementById('fac-prog');
-  if (!el) return;
-  el.innerHTML = facs.map(function(f){
-    var plans = DATA.supportPlans.filter(function(x){ return x.facId === f.id; });
-    var total = plans.length || 1;
-    var ok    = plans.filter(function(x){ return x.status === 'On track'; }).length;
-    var pct   = Math.round(ok / total * 100);
-    var col   = pct >= 80 ? 'var(--teal)' : pct >= 60 ? 'var(--amber)' : 'var(--red)';
-    var ov    = plans.filter(function(x){ return x.status === 'OVERDUE'; }).length;
-    var du    = plans.filter(function(x){ return x.status === 'Due within 30 days' || x.status === 'Expires in 14 days'; }).length;
-    var note  = ov ? '<span style="color:var(--red);font-weight:700">' + ov + ' overdue</span>' : '';
-    if (ov && du) note += ' &bull; ';
-    if (du)       note += '<span style="color:var(--amber);font-weight:700">' + du + ' due soon</span>';
-    if (!ov && !du) note = '<span style="color:var(--teal)">All on track</span>';
-    return '<div class="prog">' +
-        '<div class="prog-label">' + chip(f.id) + '</div>' +
-        '<div class="prog-track"><div class="prog-fill" style="width:' + pct + '%;background:' + col + '"></div></div>' +
-        '<div class="prog-pct" style="color:' + col + '">' + pct + '%</div></div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding-left:4px">' + note + '</div>';
-  }).join('');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CALENDAR
-// ─────────────────────────────────────────────────────────────────────────────
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
 function renderCalendar() {
   var sp = fil(DATA.supportPlans);
-  var el = document.getElementById('cal-grid');
-  if (!el) return;
-  var startOfWeek = new Date(TODAY);
-  var dow = (TODAY.getDay() + 6) % 7;
-  startOfWeek.setDate(TODAY.getDate() - dow);
-
+  var el = document.getElementById('cal-grid'); if (!el) return;
+  var sow = new Date(TODAY); sow.setDate(TODAY.getDate() - ((TODAY.getDay()+6)%7));
   var html = '<div class="cal-hdr"></div>';
-  for (var w = 0; w < 12; w++) {
-    var wDate = new Date(startOfWeek); wDate.setDate(wDate.getDate() + w*7);
-    html += '<div class="cal-hdr">' + wDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + '</div>';
-  }
-  html += '<div style="font-size:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;padding:2px 0">Plans</div>';
-  for (var w2 = 0; w2 < 12; w2++) {
-    var wS = new Date(startOfWeek); wS.setDate(wS.getDate() + w2*7);
-    var wE = new Date(wS); wE.setDate(wE.getDate() + 6);
-    var inWeek = sp.filter(function(p){
-      if (!p.dueDate) return false;
-      return p.dueDate >= wS && p.dueDate <= wE;
-    });
-    var count = inWeek.length;
-    var hasOv   = inWeek.some(function(p){ return p.status === 'OVERDUE'; });
-    var hasSoon = inWeek.some(function(p){ return p.status === 'Due within 30 days' || p.status === 'Expires in 14 days'; });
-    var bg = count === 0 ? 'var(--border)' : hasOv ? 'var(--red)' : hasSoon ? 'var(--amber)' : 'var(--teal)';
-    var tc = count === 0 ? 'transparent' : 'white';
-    html += '<div class="cal-cell" style="background:' + bg + ';color:' + tc + '" title="' + wS.toLocaleDateString('en-GB') + ': ' + count + ' plan(s)">' + (count || '') + '</div>';
+  for (var w=0; w<12; w++) { var wd=new Date(sow); wd.setDate(wd.getDate()+w*7); html += '<div class="cal-hdr">'+wd.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+'</div>'; }
+  html += '<div style="font-size:10px;font-weight:700;color:var(--text-3);display:flex;align-items:center">Plans</div>';
+  for (var w2=0; w2<12; w2++) {
+    var wS=new Date(sow); wS.setDate(wS.getDate()+w2*7); var wE=new Date(wS); wE.setDate(wE.getDate()+6);
+    var inW = sp.filter(function(p){ return p.dueDate && p.dueDate>=wS && p.dueDate<=wE; });
+    var cnt=inW.length, hasOv=inW.some(function(p){ return p.status==='OVERDUE'; }), hasSn=inW.some(function(p){ return p.status==='Due within 30 days'||p.status==='Expires in 14 days'; });
+    var bg = cnt===0?'var(--border)':hasOv?'var(--red)':hasSn?'var(--amber)':'var(--green)';
+    html += '<div class="cal-cell" style="background:'+bg+';color:'+(cnt?'white':'transparent')+'" title="'+wS.toLocaleDateString('en-GB')+': '+cnt+' plan(s)">'+(cnt||'')+'</div>';
   }
   el.innerHTML = html;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUPPORT PLANS PAGE
-// ─────────────────────────────────────────────────────────────────────────────
+// ── SUPPORT PLANS PAGE ────────────────────────────────────────────────────────
 function renderSPPage() {
   var sp = fil(DATA.supportPlans);
-  var overdue = sp.filter(function(x){ return x.status==='OVERDUE'; }).length;
-  var due30   = sp.filter(function(x){ return x.status==='Due within 30 days'||x.status==='Expires in 14 days'; }).length;
-  var onTrack = sp.filter(function(x){ return x.status==='On track'; }).length;
+  var ov=sp.filter(function(x){ return x.status==='OVERDUE'; }).length;
+  var du=sp.filter(function(x){ return x.status==='Due within 30 days'||x.status==='Expires in 14 days'; }).length;
+  var ok=sp.filter(function(x){ return x.status==='On track'; }).length;
   document.getElementById('sp-kpi-row').innerHTML =
-    kpiCard('k-red',   'Overdue',          overdue,  '') +
-    kpiCard('k-amber', 'Due within 30 days', due30, '') +
-    kpiCard('k-green', 'On track',         onTrack,  '') +
-    kpiCard('k-teal',  'Total plans',      sp.length, '') +
-    kpiCard('k-navy',  'Compliance',       (sp.length ? Math.round(onTrack/sp.length*100) : 0)+'%', '');
-  renderSPTable('sp-full-table', 0);
+    kpi('k-red','&#9888;','Overdue',ov,'')+kpi('k-amber','&#128337;','Due within 30 days',du,'')+kpi('k-green','&#9989;','On track',ok,'')+kpi('k-teal','&#128203;','Total plans',sp.length,'')+kpi('k-navy','&#128200;','Compliance',(sp.length?Math.round(ok/sp.length*100):0)+'%','');
+  var tb = document.getElementById('sp-full-table'); if (!tb) return;
+  var sorted = sp.slice().sort(function(a,b){ var da=daysFrom(a.dueDate),db=daysFrom(b.dueDate); if(da===null)return 1; if(db===null)return -1; return da-db; });
+  tb.innerHTML = sorted.map(function(sp){
+    var d=daysFrom(sp.dueDate), dStr=d===null?'—':d<0?Math.abs(d)+'d overdue':d+'d';
+    var dCol=d===null?'var(--text-3)':d<0?'var(--red)':d<=30?'var(--amber)':'var(--green)';
+    return '<tr><td style="color:var(--text-3);font-size:11px">'+(sp.id||'—')+'</td><td><strong>'+(sp.initials||'—')+'</strong></td><td>'+chip(sp.facId)+'</td><td style="color:var(--text-2)">'+sp.planType+'</td><td>'+fmtDate(sp.lastReview)+'</td><td><strong>'+fmtDate(sp.dueDate)+'</strong></td><td style="font-weight:800;color:'+dCol+'">'+dStr+'</td><td>'+(sp.keyWorker||'—')+'</td><td>'+badge(sp.status)+'</td></tr>';
+  }).join('')||'<tr><td colspan="9" class="empty">No support plans found</td></tr>';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DoLS PAGE
-// ─────────────────────────────────────────────────────────────────────────────
+// ── DoLS PAGE ─────────────────────────────────────────────────────────────────
 function renderDoLSPage() {
   var dl = fil(DATA.dols);
-  var active   = dl.filter(function(x){ return x.status==='Active'; }).length;
-  var expiring = dl.filter(function(x){ return x.status==='Review within 30 days'||x.status==='Expires in 14 days'; }).length;
-  var expired  = dl.filter(function(x){ return x.status==='EXPIRED'; }).length;
-  var renewed  = dl.filter(function(x){ return x.renewal && x.renewal.toLowerCase()==='yes'; }).length;
-
+  var ac=dl.filter(function(x){ return x.status==='Active'; }).length;
+  var ex=dl.filter(function(x){ return x.status==='Review within 30 days'||x.status==='Expires in 14 days'; }).length;
+  var xp=dl.filter(function(x){ return x.status==='EXPIRED'; }).length;
+  var rn=dl.filter(function(x){ return x.renewal&&x.renewal.toLowerCase()==='yes'; }).length;
   document.getElementById('dols-kpi-row').innerHTML =
-    kpiCard('k-teal',  'Active',             active,   '') +
-    kpiCard('k-amber', 'Expiring soon',      expiring, '') +
-    kpiCard('k-red',   'Expired',            expired,  '') +
-    kpiCard('k-navy',  'Total',              dl.length,'') +
-    kpiCard('k-green', 'Renewal applied',    renewed,  '');
-
-  var sorted = dl.slice().sort(function(a,b){
-    var da = daysFrom(a.expiry); var db = daysFrom(b.expiry);
-    if (da === null) return 1; if (db === null) return -1;
-    return da - db;
-  });
-  var tb = document.getElementById('dols-full-table');
-  if (!tb) return;
+    kpi('k-teal','&#9989;','Active',ac,'')+kpi('k-amber','&#9203;','Expiring soon',ex,'')+kpi('k-red','&#128683;','Expired',xp,'')+kpi('k-navy','&#128203;','Total',dl.length,'')+kpi('k-green','&#128196;','Renewal applied',rn,'');
+  var tb = document.getElementById('dols-full-table'); if (!tb) return;
+  var sorted = dl.slice().sort(function(a,b){ var da=daysFrom(a.expiry),db=daysFrom(b.expiry); if(da===null)return 1; if(db===null)return -1; return da-db; });
   tb.innerHTML = sorted.map(function(d){
-    var days = daysFrom(d.expiry);
-    var dStr = days === null ? '—' : days < 0 ? Math.abs(days)+'d ago' : days+'d';
-    var dCol = days === null ? 'var(--muted)' : days < 0 ? 'var(--red)' : days <= 30 ? 'var(--amber)' : 'var(--teal)';
-    return '<tr>' +
-      '<td>' + (d.id||'—') + '</td>' +
-      '<td><strong>' + (d.initials||'—') + '</strong></td>' +
-      '<td>' + chip(d.facId) + '</td>' +
-      '<td>' + fmtDate(d.granted) + '</td>' +
-      '<td><strong>' + fmtDate(d.expiry) + '</strong></td>' +
-      '<td style="font-weight:700;color:' + dCol + '">' + dStr + '</td>' +
-      '<td>' + (d.renewal||'—') + '</td>' +
-      '<td>' + badge(d.status) + '</td></tr>';
-  }).join('') || '<tr><td colspan="8" class="empty">No DoLS records</td></tr>';
-
-  var statuses = ['Active','Review within 30 days','Expires in 14 days','EXPIRED','Not yet granted'];
-  var counts   = statuses.map(function(s){ return dl.filter(function(x){ return x.status===s; }).length; });
-  var dColors  = ['#1D9E75','#EF9F27','#E24B4A','#A32D2D','#B4B2A9'];
-
+    var days=daysFrom(d.expiry), dStr=days===null?'—':days<0?Math.abs(days)+'d ago':days+'d';
+    var dCol=days===null?'var(--text-3)':days<0?'var(--red)':days<=30?'var(--amber)':'var(--green)';
+    return '<tr><td style="color:var(--text-3);font-size:11px">'+(d.id||'—')+'</td><td><strong>'+(d.initials||'—')+'</strong></td><td>'+chip(d.facId)+'</td><td>'+fmtDate(d.granted)+'</td><td><strong>'+fmtDate(d.expiry)+'</strong></td><td style="font-weight:800;color:'+dCol+'">'+dStr+'</td><td>'+(d.renewal||'—')+'</td><td>'+badge(d.status)+'</td></tr>';
+  }).join('')||'<tr><td colspan="8" class="empty">No DoLS records</td></tr>';
+  var statuses=['Active','Review within 30 days','Expires in 14 days','EXPIRED','Not yet granted'];
+  var counts=statuses.map(function(s){ return dl.filter(function(x){ return x.status===s; }).length; });
+  var dColors=['#40916C','#F4A261','#E63946','#C0152A','#94A3B8'];
   destroyChart('dolsDonut');
-  var ctx = document.getElementById('ch-dols-donut');
-  if (ctx) {
-    charts.dolsDonut = new Chart(ctx, {
-      type:'doughnut',
-      data:{labels:statuses, datasets:[{data:counts, backgroundColor:dColors, borderWidth:0}]},
-      options:{responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{legend:{display:false}}}
-    });
-  }
-  document.getElementById('dols-leg').innerHTML = statuses.map(function(s,i){
-    return '<div class="dl-row"><div class="dl-dot" style="background:' + dColors[i] + '"></div>' +
-      '<div class="dl-label">' + s + '</div><div class="dl-val">' + counts[i] + '</div></div>';
-  }).join('');
+  var ctx=document.getElementById('ch-dols-donut');
+  if (ctx) { charts.dolsDonut = new Chart(ctx,{ type:'doughnut', data:{ labels:statuses, datasets:[{ data:counts, backgroundColor:dColors, borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{display:false} } } }); }
+  document.getElementById('dols-leg').innerHTML = statuses.map(function(s,i){ return '<div class="dl-row"><div class="dl-dot" style="background:'+dColors[i]+'"></div><div class="dl-label">'+s+'</div><div class="dl-val">'+counts[i]+'</div></div>'; }).join('');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EXPENSES PAGE
-// ─────────────────────────────────────────────────────────────────────────────
+// ── EXPENSES PAGE ─────────────────────────────────────────────────────────────
 function renderExpPage() {
-  var ex = fil(DATA.expenses);
-  var total    = ex.reduce(function(s,e){ return s+e.total; }, 0);
-  var staffing = ex.filter(function(e){ return e.category==='Staffing'; }).reduce(function(s,e){ return s+e.total; }, 0);
-  var months   = Object.keys(ex.reduce(function(acc,e){ if(e.month) acc[e.month]=1; return acc; }, {})).length;
-
+  var ex=fil(DATA.expenses);
+  var total=ex.reduce(function(s,e){ return s+e.total; },0);
+  var staff=ex.filter(function(e){ return e.category==='Staffing'; }).reduce(function(s,e){ return s+e.total; },0);
+  var mos=Object.keys(ex.reduce(function(a,e){ if(e.month)a[e.month]=1; return a; },{})).length;
   document.getElementById('exp-kpi-row').innerHTML =
-    kpiCard('k-navy',  'Total spend',    gbp(total),    '', true) +
-    kpiCard('k-amber', 'Staffing spend', gbp(staffing), '', true) +
-    kpiCard('k-teal',  'Staffing %',     (total ? Math.round(staffing/total*100) : 0)+'%', '') +
-    kpiCard('k-red',   'Records',        ex.length, '') +
-    kpiCard('k-green', 'Months on record', months, '');
-
-  var monthOrder = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var allMonths = Object.keys(ex.reduce(function(acc,e){ if(e.month) acc[e.month]=1; return acc; }, {}))
-    .sort(function(a,b){ return monthOrder.indexOf(a)-monthOrder.indexOf(b); });
-  var facs = activeFac === 'all' ? DATA.facilities : DATA.facilities.filter(function(f){ return f.id===activeFac; });
-
+    kpi('k-navy','&#128181;','Total spend','<span class="small">'+gbp(total)+'</span>','')+
+    kpi('k-amber','&#128100;','Staffing spend','<span class="small">'+gbp(staff)+'</span>','')+
+    kpi('k-teal','&#128200;','Staffing %',(total?Math.round(staff/total*100):0)+'%','')+
+    kpi('k-red','&#128203;','Records',ex.length,'')+
+    kpi('k-green','&#128197;','Months on record',mos,'');
+  var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var allMos=Object.keys(ex.reduce(function(a,e){ if(e.month)a[e.month]=1; return a; },{})).sort(function(a,b){ return MO.indexOf(a)-MO.indexOf(b); });
+  var facs=activeFac==='all'?DATA.facilities:DATA.facilities.filter(function(f){ return f.id===activeFac; });
   destroyChart('expLine');
-  var ctxL = document.getElementById('ch-exp-line');
-  if (ctxL && allMonths.length) {
-    charts.expLine = new Chart(ctxL, {
-      type:'line',
-      data:{
-        labels: allMonths.map(function(m){ return m.slice(0,3); }),
-        datasets: facs.map(function(f,i){
-          return {
-            label: f.name.split(' ')[0],
-            data: allMonths.map(function(m){ return ex.filter(function(e){ return e.facId===f.id&&e.month===m; }).reduce(function(s,e){ return s+e.total; },0); }),
-            borderColor: FAC_COLORS[i%3], backgroundColor:'transparent',
-            tension:.4, pointRadius:4, pointBackgroundColor:FAC_COLORS[i%3], borderWidth:2
-          };
-        })
-      },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:facs.length>1,labels:{font:{size:11},boxWidth:10}}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F0F0F0'},ticks:{font:{size:11},callback:function(v){ return '£'+v.toLocaleString(); }}}}}
-    });
-  }
-
-  var cats = Object.keys(ex.reduce(function(acc,e){ if(e.category) acc[e.category]=1; return acc; }, {}));
-  var catTotals = cats.map(function(c){ return ex.filter(function(e){ return e.category===c; }).reduce(function(s,e){ return s+e.total; },0); });
-  var catColors = ['#1B3A6B','#1D9E75','#EF9F27','#E24B4A','#7F77DD','#D85A30','#3B6D11'];
-
+  var ctxL=document.getElementById('ch-exp-line');
+  if (ctxL&&allMos.length) { charts.expLine = new Chart(ctxL,{ type:'line', data:{ labels:allMos.map(function(m){ return m.slice(0,3); }), datasets:facs.map(function(f,i){ return { label:f.name.split(' ')[0], data:allMos.map(function(m){ return ex.filter(function(e){ return e.facId===f.id&&e.month===m; }).reduce(function(s,e){ return s+e.total; },0); }), borderColor:FAC_COLORS[i%3], backgroundColor:'transparent', tension:.4, pointRadius:4, pointBackgroundColor:FAC_COLORS[i%3], borderWidth:2.5 }; }) }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:facs.length>1, labels:{ font:{size:11}, boxWidth:10 } } }, scales:{ x:{ grid:{display:false}, ticks:{font:{size:11}} }, y:{ grid:{color:'#F0F4FA'}, ticks:{ font:{size:11}, callback:function(v){ return '£'+v.toLocaleString(); } } } } } }); }
+  var cats=Object.keys(ex.reduce(function(a,e){ if(e.category)a[e.category]=1; return a; },{}));
+  var catT=cats.map(function(c){ return ex.filter(function(e){ return e.category===c; }).reduce(function(s,e){ return s+e.total; },0); });
+  var catC=['#1A4332','#40916C','#F4A261','#E63946','#7C3AED','#D85A30','#059669'];
   destroyChart('expCat');
-  var ctxC = document.getElementById('ch-exp-cat-bar');
-  if (ctxC && cats.length) {
-    charts.expCat = new Chart(ctxC, {
-      type:'bar',
-      data:{labels:cats, datasets:[{data:catTotals, backgroundColor:catColors, borderRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F0F0F0'},ticks:{font:{size:11},callback:function(v){ return '£'+v.toLocaleString(); }}}}}
-    });
-  }
-
-  var tb = document.getElementById('exp-full-table');
-  if (!tb) return;
-  tb.innerHTML = ex.slice().sort(function(a,b){ return monthOrder.indexOf(a.month)-monthOrder.indexOf(b.month); })
-    .map(function(e){
-      return '<tr>' +
-        '<td>' + (e.id||'—') + '</td>' +
-        '<td>' + chip(e.facId) + '</td>' +
-        '<td>' + e.month + '</td>' +
-        '<td>' + e.category + '</td>' +
-        '<td style="color:var(--muted)">' + e.desc + '</td>' +
-        '<td style="color:var(--muted)">' + e.supplier + '</td>' +
-        '<td style="text-align:right">' + gbp(e.net) + '</td>' +
-        '<td style="text-align:right">' + gbp(e.vat) + '</td>' +
-        '<td style="text-align:right;font-weight:700">' + gbp(e.total) + '</td>' +
-        '<td style="color:var(--muted)">' + e.approver + '</td></tr>';
-    }).join('') || '<tr><td colspan="10" class="empty">No expense records</td></tr>';
+  var ctxC=document.getElementById('ch-exp-cat-bar');
+  if (ctxC&&cats.length) { charts.expCat = new Chart(ctxC,{ type:'bar', data:{ labels:cats, datasets:[{ data:catT, backgroundColor:catC, borderRadius:5 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ grid:{display:false}, ticks:{font:{size:11}} }, y:{ grid:{color:'#F0F4FA'}, ticks:{ font:{size:11}, callback:function(v){ return '£'+v.toLocaleString(); } } } } } }); }
+  var tb=document.getElementById('exp-full-table'); if (!tb) return;
+  tb.innerHTML = ex.slice().sort(function(a,b){ return MO.indexOf(a.month)-MO.indexOf(b.month); }).map(function(e){ return '<tr><td style="color:var(--text-3);font-size:11px">'+(e.id||'—')+'</td><td>'+chip(e.facId)+'</td><td>'+e.month+'</td><td>'+e.category+'</td><td style="color:var(--text-2)">'+e.desc+'</td><td style="color:var(--text-2)">'+e.supplier+'</td><td style="text-align:right">'+gbp(e.net)+'</td><td style="text-align:right">'+gbp(e.vat)+'</td><td style="text-align:right;font-weight:800">'+gbp(e.total)+'</td><td style="color:var(--text-2)">'+e.approver+'</td></tr>'; }).join('')||'<tr><td colspan="10" class="empty">No expense records</td></tr>';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTO-LOAD — fetches the Excel file from the repository on page open
-// ─────────────────────────────────────────────────────────────────────────────
+
+// ── THEME TOGGLE ──────────────────────────────────────────────────────────────
+(function initTheme() {
+  var saved = localStorage.getItem('ebenezer-theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (saved === 'dark' || (!saved && prefersDark)) {
+    document.documentElement.classList.add('dark');
+  }
+  updateThemeIcon();
+})();
+
+function toggleTheme() {
+  var isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('ebenezer-theme', isDark ? 'dark' : 'light');
+  updateThemeIcon();
+  // Redraw charts with correct background colours
+  if (DATA.facilities.length) { renderExpBar(); renderCatDonut(); renderExpPage(); renderDoLSPage(); }
+}
+
+function updateThemeIcon() {
+  var btn = document.getElementById('btn-theme');
+  if (!btn) return;
+  var isDark = document.documentElement.classList.contains('dark');
+  btn.innerHTML = isDark ? '&#9728;&#65039;' : '&#127769;';
+  btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+}
+
+// ── AUTO-LOAD ─────────────────────────────────────────────────────────────────
 (function autoLoad() {
   fetch('Ebenezer Real Time Monitoring Online.xlsx')
     .then(function(res) {
-      if (!res.ok) {
-        // File not found in repo — show the upload screen as fallback
-        document.getElementById('upload-screen').style.display = 'flex';
-        return null;
-      }
+      if (!res.ok) { document.getElementById('upload-screen').style.display = 'flex'; return null; }
       return res.arrayBuffer();
     })
     .then(function(buf) {
       if (!buf) return;
-      var wb = XLSX.read(buf, { type:'array', cellDates:true, cellNF:false });
+      var wb = XLSX.read(buf, {type:'array', cellDates:true, cellNF:false});
       parseAndRender(wb, 'Ebenezer Real Time Monitoring Online.xlsx');
     })
-    .catch(function() {
-      // Network error or file missing — show upload screen as fallback
-      document.getElementById('upload-screen').style.display = 'flex';
-    });
+    .catch(function() { document.getElementById('upload-screen').style.display = 'flex'; });
 })();
 </script>
 </body>
